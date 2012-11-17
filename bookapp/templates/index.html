@@ -1,0 +1,11 @@
+<link href='http://fonts.googleapis.com/css?family=Oldenburg' rel='stylesheet' type='text/css'>
+<h1 style="font-family: Oldenburg; color: #CC66FF">Welcome to the BookFairy!</h1>
+
+
+<form action="index" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+<input type="submit" value="Submit" />
+</form>
+
+Hello!
