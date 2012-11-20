@@ -4,30 +4,25 @@
 
 {% block content %}
 <h3 font-family: Sans-Serif;>Enter a book and we'll use a little fairy dust to see if it's checked in!</h3>
-<form action="/booklist" method="post">
+<form action="/booksearch" method="post">
     {% csrf_token %}
     {{ form.as_p }}
 <input type="submit" value="Submit" />
 </form>
-{% endblock %}
 
-
-
-<!-- <div class="row">
-  <div class="span6">
-   <form class="form-horizontal">
+<form class="form-horizontal" action="/listsearch" enctype="multipart/form-data" method="post">
      
     <div class="control-group">
      <label class="control-label" for="description">File: </label>
      <div class="controls">
-      <input type="text" class="input" id="description">   
+      <input type="file" name="content" class="input" id="description">
+      <button type="submit">Upload File</button>   
      </div>
-    </div>
-     
-    <div class="form-actions">
-     <button type="submit" class="btn btn-primary">Submit</button>
-     <button class="btn">Cancel</button>
     </div>
    </form>
   </div>
- </div> -->
+ </div>
+{% endblock %}
+
+
+
