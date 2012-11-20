@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 
+{% block title %}BookFairy {% endblock %}
+
+{% block content %}
 Is the book checked in? {{ is_checked_in }}
 
 <!-- empty lists evaluate to False in a Boolean context in Python and Django -->
@@ -14,4 +17,4 @@ Is the book checked in? {{ is_checked_in }}
 {% else %}
     <p>Sorry, no amount of fairy dust can check in these books for you. Check back again in a few days.</p>
 {% endif %}
-
+{% endblock %}

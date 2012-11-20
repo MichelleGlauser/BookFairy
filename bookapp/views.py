@@ -50,7 +50,6 @@ def check_if_in(base_url):
     response = requests.get(base_url)
     # gets the content from the created URL
     pyed_data = pq(response.content)
-    print pyed_data
     # useless?
     # pyed_data =("p.detail")
     detail = pyed_data("p.detail").eq(0)
@@ -58,6 +57,7 @@ def check_if_in(base_url):
     pyed_data(area).attr("href")
     href = pyed_data(area).attr("href")
     fullURL = "http://sflib1.sfpl.org" + href
+    print fullURL
     availability = requests.get(fullURL)
     return "CHECK SHELF" in availability.content 
 
@@ -65,32 +65,3 @@ def booklist(request):
     # book_info = 
     # post to booklist page
     return render(request,'booklist.html')
-
-
-
-
-
-
-
-# >>> sample_url = "http://sflib1.sfpl.org/search/X?SEARCH=world+war+z&x=46&y=10&searchscope=3&p=&m=a&Da=&Db=&SORT=D"
-# >>> base_url = "http://sflib1.sfpl.org/search/X"
-# >>> r = requests.get(base_url, params={"SEARCH": "world war z", "searchscope": 3, "m": "a"})
-# >>> dom = pq(r.text)
-# >>> links = dom("tr.briefCitRow p.detail a")
-# >>> print links
-# <a href="/search~S3?/Xworld+war+z&amp;searchscope=3&amp;m=a&amp;SORT=D/Xworld+war+z&amp;searchscope=3&amp;m=a&amp;SORT=D&amp;SUBKEY=world+war+z/1%2C43%2C43%2CB/frameset&amp;FF=Xworld+war+z&amp;searchscope=3&amp;m=a&amp;SORT=D&amp;1%2C1%2C"><img src="/screens/isitavailable.gif" alt="Is it available?" border="0"/></a><a href="/search~S3?/Xworld+war+z&amp;searchscope=3&amp;m=a&amp;SORT=D/Xworld+war+z&amp;searchscope=3&amp;m=a&amp;SORT=D&amp;SUBKEY=world+war+z/1%2C43%2C43%2CB/frameset&amp;FF=Xworld+war+z&amp;searchscope=3&amp;m=a&amp;SORT=D&amp;2%2C2%2C"><img 
-# links[0].get("href")
-# '/search~S3?/Xworld+war+z&searchscope=3&m=a&SORT=D/Xworld+war+z&searchscope=3&m=a&SORT=D&SUBKEY=world+war+z/1%2C43%2C43%2CB/frameset&FF=Xworld+war+z&searchscope=3&m=a&SORT=D&1%2C1%2C'
-# >>> new_url = "http://sflib1.sfpl.org" + links[0].get("href") 
-# >>> new_url
-# 'http://sflib1.sfpl.org/search~S3?/Xworld+war+z&searchscope=3&m=a&SORT=D/Xworld+war+z&searchscope=3&m=a&SORT=D&SUBKEY=world+war+z/1%2C43%2C43%2CB/frameset&FF=Xworld+war+z&searchscope=3&m=a&SORT=D&1%2C1%2C'
-
-#"A Tree Grows in Brooklyn Betty Smith"
-
-
-#use base_url to search  
-
-# post_request = requests.post(URL)
-
-# URL =furl("http://sflib1.sfpl.org/search/X").add("SEARCH" : search_query).add("x": 36), "y": 10, 
-#         "searchscope": location, "p": "", "m": "a", "Da": "", "Db": "", "SORT": "D"}).url 
