@@ -1,42 +1,31 @@
-# Create your views here.
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from forms import BookForm
 from pyquery import PyQuery as pq
 import requests
 
-def index(request):
+def enter_search(request):
     # Code to lookup book availability
-    if request.method == 'POST': # If the form has been submitted...
-        print "in post"
-        form = BookForm(request.POST) # A form bound to the POST data
-        if form.is_valid(): # All validation rules pass
-            # Process the data in form.cleaned_data
-            print "in is_valid"
-            book_info = form.cleaned_data['book_info']
-            print book_info
-            # TODO: Add code htere to lookup if the book is checked in
-            
-            # TODO: is the bookchecked in?
-            is_checked_in = True
-            return render(request, 'booklist.html', { 'book_info': book_info, 'is_checked_in': is_checked_in } )
-    else:
-        form = BookForm() # An unbound form
+    form = BookForm() # An unbound form
+    #other option for a message that they've submitted nothing? 
+    return render(request, 'index.html', {'form': form})
 
-    return render(request, 'index.html', {
-        'form': form,
-    })
-    #return render(request, 'index.html')
-    #return HttpResponse("Hello, world. You're at the book fairy.")
+def check_books(request):
+    form = BookForm(request.POST) # A form bound to the POST data
+    if form.is_valid(): # All validation rules pass
+        # Process the data in form.cleaned_data
+        # print "in is_valid"
+        book_info = form.cleaned_data['book_info']
+        print book_info
+        # Get correct site for book title and author
+        # is_checked_in = True
+        base_url = create_url(book_info)
+        return render(request, 'booklist.html', { 'book_info': book_info, 'is_checked_in': check_if_in(base_url) })
+        #return render(request, 'index.html')
+        #return HttpResponse("Hello, world. You're at the book fairy.")
 
-def booklist(request):
-    # book_info = 
-    # post to booklist page
-    return render(request,'booklist.html')
-
-def create_url():
+def create_url(search_query):
     #PROMPT
-    search_query = raw_input("Book title and author?") 
     #MAIN LIBRARY. THIS WILL CHANGE WHEN I ALLOW OTHER INPUT.
     location = "3"
     #MAKES TITLE AND AUTHOR (SEARCH QUERY) WORK IN A URL
@@ -47,6 +36,7 @@ def create_url():
     list = ["?SEARCH=", joined_query, "&x=0&y=0&searchscope=", location, "&p=&m=a&Da=&Db=&SORT=D"]
     #START OF THE URL
     base_url = "http://sflib1.sfpl.org/search/X"
+    print base_url
 
     # STICK THE PARTS TOGETHER TO CREATE A URL WITH THE SEARCH
     for item in list:
@@ -54,21 +44,32 @@ def create_url():
 
     return base_url
 
-def retrieve_url(base_url):
+# See if the book is checked in.
+def check_if_in(base_url):
+    # retrieves created URL
     response = requests.get(base_url)
+    # gets the content from the created URL
     pyed_data = pq(response.content)
-    pyed_data =("p.detail")
+    print pyed_data
+    # useless?
+    # pyed_data =("p.detail")
     detail = pyed_data("p.detail").eq(0)
     area = pyed_data(detail).children("a")
-    py_data(area).attr("href")
-    href = py_data(area).attr("href")
+    pyed_data(area).attr("href")
+    href = pyed_data(area).attr("href")
     fullURL = "http://sflib1.sfpl.org" + href
-
-def checkedin(fullURL):
     availability = requests.get(fullURL)
+    return "CHECK SHELF" in availability.content 
 
-    if "CHECK SHELF" in availability.content == True:
-        print "Checked in!"
+def booklist(request):
+    # book_info = 
+    # post to booklist page
+    return render(request,'booklist.html')
+
+
+
+
+
 
 
 # >>> sample_url = "http://sflib1.sfpl.org/search/X?SEARCH=world+war+z&x=46&y=10&searchscope=3&p=&m=a&Da=&Db=&SORT=D"

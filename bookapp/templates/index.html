@@ -1,11 +1,33 @@
-<link href='http://fonts.googleapis.com/css?family=Oldenburg' rel='stylesheet' type='text/css'>
-<h1 style="font-family: Oldenburg; color: #CC66FF">Welcome to the BookFairy!</h1>
+{% extends "base.html" %}
 
+{% block title %}BookFairy {% endblock %}
 
-<form action="index" method="post">
+{% block content %}
+<h3 font-family: Sans-Serif;>Enter a book and we'll use a little fairy dust to see if it's checked in!</h3>
+<form action="/booklist" method="post">
     {% csrf_token %}
     {{ form.as_p }}
 <input type="submit" value="Submit" />
 </form>
+{% endblock %}
 
-Hello!
+
+
+<!-- <div class="row">
+  <div class="span6">
+   <form class="form-horizontal">
+     
+    <div class="control-group">
+     <label class="control-label" for="description">File: </label>
+     <div class="controls">
+      <input type="text" class="input" id="description">   
+     </div>
+    </div>
+     
+    <div class="form-actions">
+     <button type="submit" class="btn btn-primary">Submit</button>
+     <button class="btn">Cancel</button>
+    </div>
+   </form>
+  </div>
+ </div> -->

@@ -1,6 +1,17 @@
-<link href='http://fonts.googleapis.com/css?family=Oldenburg' rel='stylesheet' type='text/css'>
-<h1 style="font-family: Oldenburg; color: #CC66FF">Here's your list of books that are checked in at _______!</h1>
-
-{{ book_title }}
+{% extends "base.html" %}
 
 Is the book checked in? {{ is_checked_in }}
+
+<!-- empty lists evaluate to False in a Boolean context in Python and Django -->
+{% if is_checked_in %}
+    <h1 style="font-family: Oldenburg; color: #CC66FF">Here's your list of books that are checked in at the San Francisco Main Library:</h1>
+    {{ book_info }}
+<!--     <ul>
+    {% for book_title in book_list %}
+        <li>{{ book_info }}, {{ gr_rating }}</li>
+    {% endfor %}
+    </ul> -->
+{% else %}
+    <p>Sorry, no amount of fairy dust can check in these books for you. Check back again in a few days.</p>
+{% endif %}
+
