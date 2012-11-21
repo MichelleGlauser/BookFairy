@@ -1,6 +1,7 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from forms import BookForm, UploadFileForm
+from forms import BookForm 
+# , UploadFileForm
 from pyquery import PyQuery as pq
 import requests
 

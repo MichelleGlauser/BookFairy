@@ -17,6 +17,6 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', views.enter_search),
     url(r'^booklist$', views.check_books, name='booklist'),
-    url(r'^listsearch$', views.upload_file),
+    # url(r'^listsearch$', views.upload_file),
     url(r'^booksearch$', views.handle_uploaded_file),
 )
