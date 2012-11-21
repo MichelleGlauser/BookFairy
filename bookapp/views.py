@@ -1,9 +1,8 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from forms import BookForm
+from forms import BookForm, UploadFileForm
 from pyquery import PyQuery as pq
 import requests
-from bookapp.models import UploadFileForm
 
 def enter_search(request):
     # Code to lookup book availability
@@ -25,21 +24,15 @@ def check_books(request):
         #return render(request, 'index.html')
         #return HttpResponse("Hello, world. You're at the book fairy.")
 
-
-
-
-
-
-
 def upload_file(request):
     if request.method == 'POST':
-        form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
+        form1 = UploadFileForm(request.POST, request.FILES)
+        if form1.is_valid():
             handle_uploaded_file(request.FILES['file']) #WHERE IS THIS STUFF?
             return HttpResponseRedirect('/booklist')
     else:
-        form = UploadFileForm()
-    return render('index.html', {'form': form})
+        form1 = UploadFileForm()
+    return render('index.html', {'form1': form1})
 
 
 def handle_uploaded_file(f):
@@ -47,9 +40,6 @@ def handle_uploaded_file(f):
         for chunk in f.chunks():
             destination.write(chunk)
         # destination.close()
-
-
-
 
 def create_url(search_query):
     #PROMPT

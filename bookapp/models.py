@@ -14,9 +14,3 @@ class BookList(models.Model):
     user = models.ForeignKey(User, related_name="booklists") # imported from django.contrib.auth.models
     books = models.ManyToManyField(Book, related_name="lists")
 
-class UploadFileForm(forms.Form):
-    title = forms.CharField(max_length=50)
-    file = forms.FileField()
-
-    def __unicode__(self):
-        return self.title

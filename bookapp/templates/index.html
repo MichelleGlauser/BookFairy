@@ -3,26 +3,36 @@
 {% block title %}BookFairy {% endblock %}
 
 {% block content %}
+<div class="title">
 <h3 font-family: Sans-Serif;>Enter a book and we'll use a little fairy dust to see if it's checked in!</h3>
-<form action="/booksearch" method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-<input type="submit" value="Submit" />
-</form>
+</div>
 
-<form class="form-horizontal" action="/listsearch" enctype="multipart/form-data" method="post">
-     
-    <div class="control-group">
-     <label class="control-label" for="description">File: </label>
-     <div class="controls">
-      <input type="file" name="content" class="input" id="description">
-      <button type="submit">Upload File</button>   
-     </div>
-    </div>
-   </form>
+<div class="body">
+
+  <div class="booksearch">
+    <form class="form-horizontal" action="/booksearch" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+    <input type="submit" name="content" class="input" id="description">
+<!--     <button type="submit">Submit</button> --> <!-- #I turned this off because it makes two submit buttons. ? -->
+    </form>
   </div>
- </div>
+
+</br>
+</br>
+
+  <div class="listsearch">
+    <form class="form-horizontal" action="/listsearch" enctype="multipart/form-data" method="post">
+      {% csrf_token %}
+      {{ form1.as_p }}
+    <input type="file" name="content" class="input" id="description">
+    <button type="submit">Upload File</button>
+    </form>   
+  </div>
+
+</div
 {% endblock %}
 
+<script src='http://pastie.org/5409221.js'></script>
 
 
