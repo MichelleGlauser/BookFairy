@@ -10,7 +10,7 @@
 <div class="body">
 
   <div class="booksearch">
-    <form class="form-horizontal" action="/booksearch" method="post">
+    <form enctype="multipart/form-data" class="form-horizontal" action="/booksearch" method="post">
         {% csrf_token %}
         {{ form.as_p }}
     <input type="submit" name="content" class="input" id="description">

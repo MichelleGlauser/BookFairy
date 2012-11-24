@@ -1,5 +1,7 @@
 from django.conf.urls import patterns, include, url
 from bookapp import views
+from BookFairy import settings
+from django.conf.urls.static import static
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
@@ -19,4 +21,15 @@ urlpatterns = patterns('',
     url(r'^booklist$', views.check_books, name='booklist'),
     # url(r'^listsearch$', views.upload_file),
     url(r'^booksearch$', views.handle_uploaded_file),
+    # + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #?
 )
+
+# Example on StackOverflow has a urls.py in the project folder 
+# as well as the ap folder for the Project URLs and the App URLs
+# the below is for the App URLs
+# # -*- coding: utf-8 -*-
+# from django.conf.urls.defaults import patterns, url
+
+# urlpatterns = patterns('myapp.views',
+#     url(r'^list/$', 'list', name='list'),
+# )

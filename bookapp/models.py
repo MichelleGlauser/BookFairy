@@ -10,7 +10,7 @@ class Book(models.Model):
         return self.title
 
 class BookList(models.Model):
-    title = models.CharField(max_length=255)
+    title = models.FileField(upload_to='documents/%Y/%m/%d')
     user = models.ForeignKey(User, related_name="booklists") # imported from django.contrib.auth.models
     books = models.ManyToManyField(Book, related_name="lists")
 

@@ -18,3 +18,15 @@ Is the book checked in? {{ is_checked_in }}
     <p>Sorry, no amount of fairy dust can check in these books for you. Check back again in a few days.</p>
 {% endif %}
 {% endblock %}
+
+<!-- #Stack Overflow example: -->
+  <!-- List of uploaded documents -->
+    {% if documents %}
+        <ul>
+        {% for document in documents %}
+            <li><a href="{{ document.docfile.url }}">{{ document.docfile.name }}</a></li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No documents.</p>
+    {% endif %}

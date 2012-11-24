@@ -1,9 +1,16 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from forms import BookForm 
+# from forms import BookForm 
 # , UploadFileForm
 from pyquery import PyQuery as pq
 import requests
+from django.template import RequestContext
+from django.core.urlresolvers import reverse
+
+#? instead of line 3?
+import models #or, from myproject.myapp.models import Book, BookList
+import forms # or, from myproject.myapp.forms import BookForm, UploadFileForm
+
 
 def enter_search(request):
     # Code to lookup book availability
@@ -27,20 +34,30 @@ def check_books(request):
 
 def upload_file(request):
     if request.method == 'POST':
-        form1 = UploadFileForm(request.POST, request.FILES)
-        if form1.is_valid():
-            handle_uploaded_file(request.FILES['file']) #WHERE IS THIS STUFF?
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            handle_uploaded_file(request.FILES['file'])
+
+            # new_booklist = BookList(request.FILES['file']) #Or 'docfile'?
+            # new_booklist.save()
+
             return HttpResponseRedirect('/booklist')
     else:
-        form1 = UploadFileForm()
-    return render('index.html', {'form1': form1})
+        form = UploadFileForm()
+    c = {'form':form}
+    c.update(csrf(request))
+    return render('index.html', c) 
+        # {'form': form},
+        # context_instance=RequestContext(request))
 
 
-def handle_uploaded_file(f):
-    with open('some/file/name.txt', 'wb+') as destination:
-        for chunk in f.chunks():
+
+def handle_uploaded_file(file):
+    with open('file', 'wb+') as destination: #how do I put the name of the uploaded file here?
+        #why is this function being called when I do a book search and not a list search?
+        for chunk in file.chunks():
             destination.write(chunk)
-        # destination.close()
+        destination.close()
 
 def create_url(search_query):
     #PROMPT
@@ -83,3 +100,4 @@ def booklist(request):
     # book_info = 
     # post to booklist page
     return render(request,'booklist.html')
+
