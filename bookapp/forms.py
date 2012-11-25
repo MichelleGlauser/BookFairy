@@ -8,10 +8,9 @@ class BookForm(forms.Form):
         help_text='max. 42 megabytes')
     #How do I combine the title and file fields so that a box shows up, but you can choose the one you want?
 
-# class UploadFileForm(forms.Form):
-#     booklist = forms.FileField(
-#         label="Select a file:",
-#         help_text='max. 42 megabytes')
+class UploadFileForm(forms.Form):
+    booklist = forms.FileField(label="Select a file:",
+                               help_text='max. 42 megabytes')
 
     def __unicode__(self):
         return self.title
