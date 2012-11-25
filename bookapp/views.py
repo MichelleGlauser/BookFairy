@@ -1,15 +1,12 @@
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
-from forms import BookForm
-# , UploadFileForm
+from django.shortcuts import render, render_to_response
+from forms import BookForm, UploadFileForm
 from pyquery import PyQuery as pq
 import requests
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
 
 #? instead of line 3?
-import models #or, from myproject.myapp.models import Book, BookList
-import forms # or, from myproject.myapp.forms import BookForm, UploadFileForm
 #import settings?
 
 def enter_search(request):
@@ -28,7 +25,9 @@ def check_books(request):
         # Get correct site for book title and author
         # is_checked_in = True
         base_url = create_url(book_info)
-        return render(request, 'booklist.html', { 'book_info': book_info, 'is_checked_in': check_if_in(base_url) })
+        return render_to_response('booklist.html', { 'book_info': book_info, 'is_checked_in': check_if_in(base_url) },
+                                  context_instance=RequestContext(request))
+
         #return render(request, 'index.html')
         #return HttpResponse("Hello, world. You're at the book fairy.")
 
@@ -36,29 +35,36 @@ def upload_file(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            handle_uploaded_file(request.FILES['file'])
+            file = form.cleaned_data['booklist']
 
-            # new_booklist = BookList(request.FILES['file']) #Or 'docfile'?
-            # new_booklist.save()
+            book_titles = []
 
-            return HttpResponseRedirect('/booklist')
+            # since your files are small enough to fit in memory, it's simpler to use
+            # read() than splitting the file into chunks
+            for line in file:
+                # print each line of the file -- for debugging purposes only
+                print line
+
+                # add books to a list
+                book_titles.append(line)
+
+                # here is where you'll want to parse the comma delimted file and
+                # check each book
+            
+            file.close()
+
+            
+            return render_to_response('booklist.html', { 'book_titles': book_titles },
+                                  context_instance=RequestContext(request))
+
+            # Why are you doing this?
+            #return HttpResponseRedirect('/booklist/')
     else:
         form = UploadFileForm()
-    # c = {'form':form}
-    # c.update(csrf(request))
 
-    return render('index.html', {'form': form},
+    return render_to_response('index.html', {'form': form},
         context_instance=RequestContext(request))
 
-
-
-
-def handle_uploaded_file(file):
-    with open('file.name', 'wb+') as destination: #how do I put the name of the uploaded file here?
-        #why is this function being called when I do a book search and not a list search?
-        for chunk in file.chunks():
-            destination.write(chunk)
-        destination.close()
 
 def create_url(search_query):
     #PROMPT
@@ -100,5 +106,5 @@ def check_if_in(base_url):
 def booklist(request):
     # book_info = 
     # post to booklist page
-    return render(request,'booklist.html')
+    return render_to_response(request,'booklist.html')
 
