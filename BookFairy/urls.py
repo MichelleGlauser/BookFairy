@@ -18,9 +18,9 @@ urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', views.enter_search),
-    url(r'^booklist$', views.check_books, name='booklist'),
+    url(r'^booklist/$', views.check_books, name='booklist'),
     # url(r'^listsearch$', views.upload_file),
-    url(r'^booksearch$', views.upload_file),
+    url(r'^booksearch/$', views.upload_file),
     # + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #?
 )
 
