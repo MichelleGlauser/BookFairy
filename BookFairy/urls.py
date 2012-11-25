@@ -20,7 +20,7 @@ urlpatterns = patterns('',
     url(r'^$', views.enter_search),
     url(r'^booklist$', views.check_books, name='booklist'),
     # url(r'^listsearch$', views.upload_file),
-    url(r'^booksearch$', views.handle_uploaded_file),
+    url(r'^booksearch$', views.upload_file),
     # + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #?
 )
 

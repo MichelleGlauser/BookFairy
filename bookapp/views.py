@@ -1,6 +1,6 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-# from forms import BookForm 
+from forms import BookForm
 # , UploadFileForm
 from pyquery import PyQuery as pq
 import requests
@@ -10,7 +10,7 @@ from django.core.urlresolvers import reverse
 #? instead of line 3?
 import models #or, from myproject.myapp.models import Book, BookList
 import forms # or, from myproject.myapp.forms import BookForm, UploadFileForm
-
+#import settings?
 
 def enter_search(request):
     # Code to lookup book availability
@@ -44,16 +44,17 @@ def upload_file(request):
             return HttpResponseRedirect('/booklist')
     else:
         form = UploadFileForm()
-    c = {'form':form}
-    c.update(csrf(request))
-    return render('index.html', c) 
-        # {'form': form},
-        # context_instance=RequestContext(request))
+    # c = {'form':form}
+    # c.update(csrf(request))
+
+    return render('index.html', {'form': form},
+        context_instance=RequestContext(request))
+
 
 
 
 def handle_uploaded_file(file):
-    with open('file', 'wb+') as destination: #how do I put the name of the uploaded file here?
+    with open('file.name', 'wb+') as destination: #how do I put the name of the uploaded file here?
         #why is this function being called when I do a book search and not a list search?
         for chunk in file.chunks():
             destination.write(chunk)
