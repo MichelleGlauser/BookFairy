@@ -1,7 +1,7 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from forms import BookForm
-# , UploadFileForm
+from forms import UploadFileForm
+# , 
 from pyquery import PyQuery as pq
 import requests
 from django.template import RequestContext
@@ -12,30 +12,32 @@ import models #or, from myproject.myapp.models import Book, BookList
 import forms # or, from myproject.myapp.forms import BookForm, UploadFileForm
 #import settings?
 
-def enter_search(request):
-    # Code to lookup book availability
-    form = BookForm() # An unbound form
-    #other option for a message that they've submitted nothing? 
-    return render(request, 'index.html', {'form': form})
+# def enter_search(request):
+#     # Code to lookup book availability
+#     form = BookForm() # An unbound form
+#     #other option for a message that they've submitted nothing? 
+#     return render(request, 'index.html', {'form': form})
 
-def check_books(request):
-    form = BookForm(request.POST) # A form bound to the POST data
-    if form.is_valid(): # All validation rules pass
-        # Process the data in form.cleaned_data
-        # print "in is_valid"
-        book_info = form.cleaned_data['book_info']
-        print book_info
-        # Get correct site for book title and author
-        # is_checked_in = True
-        base_url = create_url(book_info)
-        return render(request, 'booklist.html', { 'book_info': book_info, 'is_checked_in': check_if_in(base_url) })
-        #return render(request, 'index.html')
-        #return HttpResponse("Hello, world. You're at the book fairy.")
+# def check_books(request):
+#     form = BookForm(request.POST) # A form bound to the POST data
+#     if form.is_valid(): # All validation rules pass
+#         # Process the data in form.cleaned_data
+#         # print "in is_valid"
+#         book_info = form.cleaned_data['book_info']
+#         print book_info
+#         # Get correct site for book title and author
+#         # is_checked_in = True
+#         base_url = create_url(book_info)
+#         return render(request, 'booklist.html', { 'book_info': book_info, 'is_checked_in': check_if_in(base_url) })
+#         return HttpResponseRedirect('/booklist')
+#         #return render(request, 'index.html')
+#         return HttpResponse("Hello, world. You're at the book fairy.")
 
 def upload_file(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
+            file_info = form.cleaned_data['book_info'] #? Just copied from above
             handle_uploaded_file(request.FILES['file'])
 
             # new_booklist = BookList(request.FILES['file']) #Or 'docfile'?
