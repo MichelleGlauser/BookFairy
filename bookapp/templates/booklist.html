@@ -1,21 +1,22 @@
 {% extends "base.html" %}
 
-{% block title %}BookFairy {% endblock %}
+{% block title %}BookFairy | helping booklisters check the library a whole list at a time{% endblock %}
 
 {% block content %}
-Is the book checked in? {{ is_checked_in }}
+Hurry to the library, because these books are checked in: {{ booklist }}
 
 <!-- empty lists evaluate to False in a Boolean context in Python and Django -->
 {% if is_checked_in %}
     <h1 style="font-family: Oldenburg; color: #CC66FF">Here's your list of books that are checked in at the San Francisco Main Library:</h1>
     {{ book_info }}
 <!--     <ul>
-    {% for book_title in book_list %}
+    {% for book_title in book_titles %}
         <li>{{ book_info }}, {{ gr_rating }}</li>
     {% endfor %}
     </ul> -->
 {% else %}
-    <p>Sorry, no amount of fairy dust can check in these books for you. Check back again in a few days.</p>
+    {{ sorry_msg }}
+<!--     <p>Sorry, no amount of fairy dust can check in these books for you. Check back again in a few days.</p> -->
 {% endif %}
 {% endblock %}
 
@@ -29,4 +30,5 @@ Is the book checked in? {{ is_checked_in }}
         </ul>
     {% else %}
         <p>No documents.</p>
+
     {% endif %}

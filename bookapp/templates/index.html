@@ -1,16 +1,15 @@
 {% extends "base.html" %}
 
-{% block title %}BookFairy {% endblock %}
+{% block title %}BookFairy | helping booklisters check the library a whole list at a time{% endblock %}
 
 {% block content %}
 <div class="title">
-<h3 font-family: Sans-Serif;>Choose a CSV file (with book title and author) from your computer and we'll use a little fairy dust to see which items are checked in!</h3>
+<h3 font-family: Sans-Serif;>Choose a file (with book title and author) from your computer and we'll use a little fairy dust to see which items are checked in!</h3>
 </div>
 
 <div class="body">
-
-  <div class="booklist">
-    <form enctype="multipart/form-data" class="form-horizontal" action="/booklist" method="post">
+  <div class="booksearch">
+    <form enctype="multipart/form-data" class="form-horizontal" action="/booksearch/" method="post">
         {% csrf_token %}
         {{ form.as_p }}
     <input type="submit" name="content" class="input" id="description">
@@ -32,7 +31,5 @@
  -->
 </div
 {% endblock %}
-
-<script src='http://pastie.org/5409221.js'></script>
 
 
