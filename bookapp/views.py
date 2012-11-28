@@ -6,12 +6,15 @@ import requests
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
 
+# to retrieve book info -- is this function still doing something?
 def enter_search(request):
-    # Code to lookup book availability
+
     form = BookForm() # An unbound form
     #other option for a message that they've submitted nothing? 
     return render_to_response(request, 'index.html', {'form': form})
 
+
+# to retrieve book info -- figure out with "upload_file" function
 def check_books(request):
     form = BookForm(request.POST) # A form bound to the POST data
     if form.is_valid(): # All validation rules pass
@@ -19,12 +22,14 @@ def check_books(request):
         # print "in is_valid"
         book_info = form.cleaned_data['book_info']
         print book_info
-        # Get correct site for book title and author
-        # is_checked_in = True
-        base_url = create_url(book_info)
+        base_url = create_library_url(book_info)
         return render_to_response('booklist.html', { 'book_info': book_info, 'is_checked_in': check_if_in(base_url) },
                                   context_instance=RequestContext(request))
 
+#def choose_library(request):
+    # make new form in Forms.py so that user can select a library from a drop-down menu    
+
+# to upload a plain text book list -- split into several views
 def upload_file(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
@@ -48,21 +53,23 @@ def upload_file(request):
             
             booklist = []    
             for book in book_titles[1:]:
-                is_checked_in = check_if_in(create_url(book))
+                is_checked_in = check_if_in(create_library_url(book))
                 if is_checked_in == True:
                     booklist.append(book)
                 else:
-                    sorry_msg = """
-                    Sorry, no amount of fairy dust can check in 
-                    any of these books for you. Check back again in a few days.
-                    """
-                    print sorry_msg 
-                    
+                    None
+            sorry_msg = """
+            Sorry, no amount of fairy dust can check in 
+            any of these books for you. Check back again in a few days.
+            """
+            if len(booklist) == 0:
+
+                print sorry_msg
             # here is where you'll want to parse the comma delimited file and
             # check each book
             
             file.close()            
-            return render_to_response('booklist.html', { 'booklist': booklist },
+            return render_to_response('booklist.html', { 'is_checked_in': is_checked_in }, { 'sorry_msg': sorry_msg },
                                   context_instance=RequestContext(request))
     else:
         form = UploadFileForm()
@@ -71,7 +78,8 @@ def upload_file(request):
         context_instance=RequestContext(request))
 
 
-def create_url(search_query):
+# to retrieve the SFPL site url for any book
+def create_library_url(search_query):
     #PROMPT
     #MAIN LIBRARY. THIS WILL CHANGE WHEN I ALLOW OTHER INPUT.
     location = "3"
@@ -82,33 +90,60 @@ def create_url(search_query):
     # m=media type (a=book)
     list = ["?SEARCH=", joined_query, "&x=0&y=0&searchscope=", location, "&p=&m=a&Da=&Db=&SORT=D"]
     #START OF THE URL
-    base_url = "http://sflib1.sfpl.org/search/X"
+    library_base_url = "http://sflib1.sfpl.org/search/X"
 
     # STICK THE PARTS TOGETHER TO CREATE A URL WITH THE SEARCH
     for item in list:
-        base_url += item
+        library_base_url += item
     
-    return base_url
+    return library_base_url
 
-# See if the book is checked in.
-def check_if_in(base_url):
+
+# to see if the book is checked in
+def check_if_in(library_base_url):
     # retrieves created URL
-    response = requests.get(base_url)
+    response = requests.get(library_base_url)
     # gets the content from the created URL
     pyed_data = pq(response.content)
-    # useless?
-    # pyed_data =("p.detail")
-    detail = pyed_data("p.detail").eq(0)
-    area = pyed_data(detail).children("a")
-    pyed_data(area).attr("href")
-    href = pyed_data(area).attr("href")
-    fullURL = "http://sflib1.sfpl.org" + href
+    detail = pyed_data("p.detail").eq(0) #shows whole p class
+    area = pyed_data(detail).children("a") # looks like this does the same thing
+    href = pyed_data(area).attr("href") # this provides the URL without any tags
+    fullURL = "http://sflib1.sfpl.org" + href 
     print fullURL
     availability = requests.get(fullURL)
     return "CHECK SHELF" in availability.content 
 
+
+# what is this function for?
 def booklist(request):
     # book_info = 
     # post to booklist page
     return render_to_response(request,'booklist.html')
+
+# to retrieve the Goodreads site url for any book
+def create_gr_url(gr_search_query):
+    joined_query = "+".join(gr_search_query.split())
+    url_list = [joined_query, "&search_type=books"]
+    #START OF THE URL
+    gr_url = "http://www.goodreads.com/search?utf8=%E2%9C%93&q="
+
+    # STICK THE PARTS TOGETHER TO CREATE A URL WITH THE SEARCH
+    for item in url_list:
+        gr_url += item
+    
+    return gr_url
+
+
+# to retrieve the Goodreads rating 
+def find_gr_rating(gr_url):
+    url = "http://www.goodreads.com/search?utf8=%E2%9C%93&q=atlas+shrugged+ayn+rand&search_type=books"
+    # requests gr_url 
+    response = requests.get(gr_url)
+    # retrieves content from gr_url
+    data = pq(response.content)
+    # gets to the correct area of html
+    area = data("span.minirating").eq(0)
+    a = data(area)
+    # pulls out rating avg and number of ratings
+    gr_rating = a.text()
 

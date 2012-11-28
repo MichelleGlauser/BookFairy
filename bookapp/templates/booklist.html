@@ -3,32 +3,17 @@
 {% block title %}BookFairy | helping booklisters check the library a whole list at a time{% endblock %}
 
 {% block content %}
-Hurry to the library, because these books are checked in: {{ booklist }}
 
 <!-- empty lists evaluate to False in a Boolean context in Python and Django -->
-{% if is_checked_in %}
-    <h1 style="font-family: Oldenburg; color: #CC66FF">Here's your list of books that are checked in at the San Francisco Main Library:</h1>
-    {{ book_info }}
-<!--     <ul>
-    {% for book_title in book_titles %}
-        <li>{{ book_info }}, {{ gr_rating }}</li>
+{% if is_checked_in == True %}
+    <h1 style="font-family: Oldenburg; color: #CC66FF">Hurry to the library, because these books are checked in:</h1>
+    <ul>
+    {% for book in booklist %}
+        <li>{% book %} <!--, {{ gr_rating }} --></li>
     {% endfor %}
-    </ul> -->
-{% else %}
+    </ul>
+{% elif len(booklist) == 0 %}
     {{ sorry_msg }}
 <!--     <p>Sorry, no amount of fairy dust can check in these books for you. Check back again in a few days.</p> -->
 {% endif %}
 {% endblock %}
-
-<!-- #Stack Overflow example: -->
-  <!-- List of uploaded documents -->
-    {% if documents %}
-        <ul>
-        {% for document in documents %}
-            <li><a href="{{ document.docfile.url }}">{{ document.docfile.name }}</a></li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>No documents.</p>
-
-    {% endif %}
