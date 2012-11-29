@@ -5,15 +5,14 @@
 {% block content %}
 
 <!-- empty lists evaluate to False in a Boolean context in Python and Django -->
-{% if is_checked_in == True %}
+{% if booklist %}
     <h1 style="font-family: Oldenburg; color: #CC66FF">Hurry to the library, because these books are checked in:</h1>
     <ul>
     {% for book in booklist %}
-        <li>{% book %} <!--, {{ gr_rating }} --></li>
+        <li>{{ book.0 }}, {{ book.1 }} </li>
     {% endfor %}
     </ul>
-{% elif len(booklist) == 0 %}
-    {{ sorry_msg }}
-<!--     <p>Sorry, no amount of fairy dust can check in these books for you. Check back again in a few days.</p> -->
+{% else %}
+    Sorry, no amount of fairy dust can check in any of these books for you. Check back again in a few days.
 {% endif %}
 {% endblock %}

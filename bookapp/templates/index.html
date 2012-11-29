@@ -9,27 +9,14 @@
 
 <div class="body">
   <div class="booksearch">
-    <form enctype="multipart/form-data" class="form-horizontal" action="/booksearch/" method="post">
+    <form enctype="multipart/form-data" class="form-horizontal" action="{% url bookapp.views.check_books %}" method="post">
         {% csrf_token %}
         {{ form.as_p }}
     <input type="submit" name="content" class="input" id="description">
 <!--     <button type="submit">Submit</button> --> <!-- #I turned this off because it makes two submit buttons. ? -->
     </form>
   </div>
-
-</br>
-</br>
-<!-- 
-  <div class="listsearch">
-    <form class="form-horizontal" action="/listsearch" enctype="multipart/form-data" method="post">
-      {% csrf_token %}
-      {{ form1.as_p }}
-    <input type="file" name="content" class="input" id="description">
-    <button type="submit">Upload File</button>
-    </form>   
-  </div>
- -->
-</div
+</div>
 {% endblock %}
 
 
