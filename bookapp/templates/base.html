@@ -1,13 +1,21 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <html lang="en">
+<meta charset=”utf-8”>
+<link href="static/css/bootstrap.css" rel="stylesheet" media="screen">
+<link href="static/css/BookFairy.css" rel="stylesheet" media="screen">  <link href='http://fonts.googleapis.com/css?family=Montserrat+Alternates:400,700' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=Oldenburg' rel='stylesheet' type='text/css'>
+
 <head>
-    <title>{% block title %}BookFairy | helping booklisters check the library a whole list at a time{% endblock %}</title>
+    <title>BookFairy | helping booklisters check the library a whole list at a time</title>
 </head>
 <body>
-    <h1 style="font-family: Oldenburg; color: #CC66FF">BookFairy | helping booklisters check the library a whole list at a time</h1>
-    {% block content %}{% endblock %}
-    {% block footer %}
+    <div class="background" style="background-image:url(static/img/norwegianrose.png); background-repeat:repeat">
+    </div>
+        <div class="box">
+            <h1 style="font-family: Oldenburg; color: #CC66FF">BookFairy | helping booklisters check the library a whole list at a time</h1>
+        </div>
+    {% block content %}
     {% endblock %}
+
 </body>
 </html>

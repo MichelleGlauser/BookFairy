@@ -12,33 +12,31 @@ class BookForm(forms.Form):
         ("32", "Branch Bookmobile 1"), 
         ("8", "Chinatown"),
         ("9", "Eureka Valley"),
+        ("10", "Excelsior"),
+        ("11", "Glen Park"),
+        ("12", "Golden Gate Valley"),
+        ("13", "Ingleside"),
+        ("14", "Library on Wheels"),
+        ("3", "Main Library"),
+        ("15", "Marina"),
+        ("16", "Merced"),
+        ("17", "Mission"),
+        ("18", "Mission Bay"),
+        ("19", "Noe Valley"),
+        ("20", "North Beach"),
+        ("21", "Oceanview"),
+        ("22", "Ortega"),
+        ("23", "Park"),
+        ("24", "Parkside"),
+        ("25", "Portola"),
+        ("26", "Potrero"),
+        ("27", "Presidio"),
+        ("28", "Richmond"),
+        ("29", "Sunset"),
+        ("30", "Visitaction Valley"),
+        ("31", "West Portal"),
+        ("34", "Western Addition"),
+
         ],
 
         label="Library Branch")
-
-#       <option value="8"> Chinatown</option> 
-#       <option value="9"> Eureka Valley</option> 
-#       <option value="10"> Excelsior</option> 
-#       <option value="11"> Glen Park</option> 
-#       <option value="12"> Golden Gate Valley</option> 
-#       <option value="13"> Ingleside</option> 
-#       <option value="14"> Library on Wheels</option> 
-#       <option value="3"> Main Library</option> 
-#       <option value="15"> Marina</option> 
-#       <option value="16"> Merced</option> 
-#       <option value="17"> Mission</option> 
-#       <option value="18"> Mission Bay</option> 
-#       <option value="19"> Noe Valley</option> 
-#       <option value="20"> North Beach</option> 
-#       <option value="21"> Oceanview</option> 
-#       <option value="22"> Ortega</option> 
-#       <option value="23"> Park</option> 
-#       <option value="24"> Parkside</option> 
-#       <option value="25"> Portola</option> 
-#       <option value="26"> Potrero</option> 
-#       <option value="27"> Presidio</option> 
-#       <option value="28"> Richmond</option> 
-#       <option value="29"> Sunset</option> 
-#       <option value="30"> Visitacion Valley</option> 
-#       <option value="31"> West Portal</option> 
-#       <option value="34"> Western Addition</option> 

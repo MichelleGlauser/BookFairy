@@ -5,6 +5,7 @@ from pyquery import PyQuery as pq
 import requests
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
+from fuzzywuzzy import fuzz
 
 # to retrieve book info -- is this function still doing something?
 def enter_search(request):
@@ -12,6 +13,64 @@ def enter_search(request):
     form = BookForm() # An unbound form
     return render(request, "index.html", {"form": form})
 
+def extract_title_from_single(pq_data):
+    bib_info_list = pq_data("td.bibInfoData")
+    if not bib_info_list:
+        return None
+    title_td = bib_info_list[2]
+    return title_td.text_content()
+
+def extract_title_from_multiple(book_title, pq_data):
+    a_tags = pq_data("tr.briefCitRow tr:first-child>td>a")
+    
+    print a_tags
+    # filtered_tags = []
+    # for tag in a_tags:
+    #     if tag != "":
+    #         filtered_tags.append(tag)
+
+    filtered_tags = [ tag.text for tag in a_tags if tag.text ]
+    print filtered_tags
+    scored_tags = []
+    for tag in filtered_tags:
+        # print tag.text, book_title
+        score = fuzz.token_set_ratio(book_title, tag)
+        score_pair = (score, tag)
+        if score > 50:
+            scored_tags.append(score_pair)
+
+    # scored_tags = [ (fuzz.token_set_ratio(title, tag), tag) 
+    #                     for tag in filtered_tags ]
+
+    scored_tags.sort()
+    if not scored_tags:
+        return None
+
+    best = scored_tags[-1]
+    return best[1]
+
+
+def extract_title(book_title, html):
+    pq_data = pq(html)
+    title = extract_title_from_single(pq_data)
+    if not title:
+        title = extract_title_from_multiple(book_title, pq_data)
+
+    return title
+
+
+def get_library_title(book, library):
+    url = create_library_url(book, library)
+    response = requests.get(url).content
+    title = extract_title(book, response)
+    return title
+
+def get_details(book, library):
+    title = get_library_title(book, library)
+    if not title:
+        return None
+    rating = get_goodreads_rating(book)
+    return (title, rating)
 
 # to retrieve book info -- figure out with "upload_file" function
 def check_books(request):
@@ -27,12 +86,15 @@ def check_books(request):
     booklist = process_book_file(book_file) # returns booklist list
     checked_in_books = []
     for book in booklist:
-        library_base_url = create_library_url(book, lib_location)
-        if check_if_in(library_base_url) == True:
-            gr_url = create_gr_url(book)
-            gr_rating = find_gr_rating(gr_url) #returns gr_rating
-            checked_in_books.append( (book, gr_rating) )
-            # put these in printed booklist in html: 
+        details = get_details(book, lib_location)
+        if details:
+            checked_in_books.append(details)
+        # library_base_url = create_library_url(book, lib_location)
+        # if check_if_in(library_base_url) == True:
+        #     gr_url = create_gr_url(book)
+        #     gr_rating = find_gr_rating(gr_url) #returns gr_rating
+        #     checked_in_books.append( (book, gr_rating) )
+        #     # put these in printed booklist in html: 
             # {{ booklist }}, {{ gr_rating }}
             # HOW? THE RATINGS NEED TO BE ASSIGNED! 
             # booklist = iter(booklist) # says needs 2 length
@@ -96,7 +158,7 @@ def create_library_url(search_query, lib_location = "3"):
     #SETTING UP COMPONENTS OF SEARCH URL 
     # searchscope=library location
     # m=media type (a=book)
-    list = ["?SEARCH=", joined_query, "&x=0&y=0&searchscope=", lib_location, "&p=&m=a&Da=&Db=&SORT=D"]
+    list = ["?SEARCH=", joined_query, "&x=0&y=0&searchscope=", lib_location, "&p=&m=a&Da=&Db=&SORT=D&availlim=1"]
     #START OF THE URL
     library_base_url = "http://sflib1.sfpl.org/search/X"
 
@@ -104,8 +166,8 @@ def create_library_url(search_query, lib_location = "3"):
     for item in list:
         library_base_url += item
     
+    print "LIB_URL=", library_base_url
     return library_base_url
-
 
 # to see if the book is checked in
 def check_if_in(library_base_url):
@@ -113,15 +175,26 @@ def check_if_in(library_base_url):
     response = requests.get(library_base_url)
     # gets the content from the created URL
     pyed_data = pq(response.content)
+    # print pyed_data
     detail = pyed_data("p.detail").eq(0) #shows whole p class
+    print "DETAIL=", detail
     area = pyed_data(detail).children("a") # looks like this does the same thing
+    print "AREA=", area
     href = pyed_data(area).attr("href") # this provides the URL without any tags
-    fullURL = "http://sflib1.sfpl.org" + href 
+    print href
+    fullURL = "http://sflib1.sfpl.org" + href
+    # if href is None:
+         
     availability = requests.get(fullURL)
     # returns True if the content on the site, 
     # shows the words "CHECK SHELF"
     return "CHECK SHELF" in availability.content 
 
+
+def get_goodreads_rating(book):
+    url = create_gr_url(book)
+    rating = find_gr_rating(url)
+    return rating
 
 # to retrieve the Goodreads site url for any book
 def create_gr_url(gr_search_query):
