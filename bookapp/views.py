@@ -9,7 +9,7 @@ from fuzzywuzzy import fuzz
 
 # to retrieve book info -- is this function still doing something?
 def enter_search(request):
-    print "Stuff"
+    # print "Stuff"
     form = BookForm() # An unbound form
     return render(request, "index.html", {"form": form})
 
@@ -23,14 +23,14 @@ def extract_title_from_single(pq_data):
 def extract_title_from_multiple(book_title, pq_data):
     a_tags = pq_data("tr.briefCitRow tr:first-child>td>a")
     
-    print a_tags
+    # print a_tags
     # filtered_tags = []
     # for tag in a_tags:
     #     if tag != "":
     #         filtered_tags.append(tag)
 
     filtered_tags = [ tag.text for tag in a_tags if tag.text ]
-    print filtered_tags
+    # print filtered_tags
     scored_tags = []
     for tag in filtered_tags:
         # print tag.text, book_title
@@ -39,6 +39,7 @@ def extract_title_from_multiple(book_title, pq_data):
         if score > 50:
             scored_tags.append(score_pair)
 
+    # Other way to write it:
     # scored_tags = [ (fuzz.token_set_ratio(title, tag), tag) 
     #                     for tag in filtered_tags ]
 
@@ -81,7 +82,7 @@ def check_books(request):
     # Process the data in form.cleaned_data -- but what about the location data?
     book_file = form.cleaned_data['book_file']
     lib_location = form.cleaned_data['lib_location']
-    print "%r"%lib_location 
+    # print "%r"%lib_location 
     gr_rating = 0
     booklist = process_book_file(book_file) # returns booklist list
     checked_in_books = []
@@ -110,33 +111,6 @@ def check_books(request):
         request,'booklist.html', 
         { 'booklist': checked_in_books }
         )
-    # 'is_checked_in': check_if_in(base_url) 
-
-        # return render_to_response('booklist.html', { 'booklist': booklist, 'is_checked_in': check_if_in(base_url) },
-        #                           context_instance=RequestContext(request))
-
-
-    # for book in booklist[1:]:
-    #     is_checked_in = check_if_in(create_library_url(book))
-    #     if is_checked_in == True:
-    #         booklist.append(book)
-    #     else:
-    #         None
-    # sorry_msg = """
-    # Sorry, no amount of fairy dust can check in 
-    # any of these books for you. Check back again in a few days.
-    # """
-    # if len(booklist) == 0:
-
-    #     print sorry_msg            
-    # file.close()            
-    # return render_to_response('booklist.html', { 'is_checked_in': is_checked_in, 'sorry_msg': sorry_msg },
-    #                       context_instance=RequestContext(request))
-#     else:
-#         form = UploadFileForm()
-
-#     return render_to_response('index.html', {'form': form},
-#         context_instance=RequestContext(request))
 
 # opens book file and puts the books in a list
 def process_book_file(book_file):
@@ -166,7 +140,7 @@ def create_library_url(search_query, lib_location = "3"):
     for item in list:
         library_base_url += item
     
-    print "LIB_URL=", library_base_url
+    # print "LIB_URL=", library_base_url
     return library_base_url
 
 # to see if the book is checked in
@@ -193,7 +167,7 @@ def check_if_in(library_base_url):
 
 def get_goodreads_rating(book):
     url = create_gr_url(book)
-    rating = find_gr_rating(url)
+    rating = find_gr_ratings(url)
     return rating
 
 # to retrieve the Goodreads site url for any book
@@ -210,15 +184,31 @@ def create_gr_url(gr_search_query):
 
 
 # to retrieve the Goodreads rating 
-def find_gr_rating(gr_url):
-    url = "http://www.goodreads.com/search?utf8=%E2%9C%93&q=atlas+shrugged+ayn+rand&search_type=books"
-    # requests gr_url 
-    response = requests.get(gr_url)
-    # retrieves content from gr_url
-    data = pq(response.content)
-    # gets to the correct area of html
-    area = data("span.minirating").eq(0)
-    a = data(area)
-    # pulls out rating avg and number of ratings
-    gr_rating = a.text()
-    return gr_rating
+# def find_gr_ratings(gr_url):
+#     # example_url = "http://www.goodreads.com/search?utf8=%E2%9C%93&q=atlas+shrugged+ayn+rand&search_type=books"
+#     # requests gr_url 
+#     response = requests.get(gr_url)
+#     # retrieves content from gr_url
+#     data = pq(response.content)
+
+#     books = data("tr[itemtype='http://schema.org/Book']")
+
+#     # gets to the correct area of html
+#     area = data("span.minirating").eq(0)
+#     a_info = data(b).children("td").eq(1) ??
+#     b_info = data(a_info).children("a.bookTitle")
+    
+#     a = data(area)
+#     # pulls out rating avg and number of ratings
+#     gr_ratings = a.text()
+#     return gr_ratings
+
+
+
+# def filter_gr_ratings(gr_ratings):
+#     get title and author using pyquery 
+#     put title and author into lists and use fuzzywuzzy to rate
+#     sort lists
+#     how to connect the lists?
+#     choose book with highest correlation between search and title and author
+#     put rating into the list to be put on the booklist page

@@ -1,7 +1,7 @@
 from django import forms
 
 class BookForm(forms.Form):
-    book_file = forms.FileField( #shows the choose file
+    book_file = forms.FileField(  # shows the choose file
         label="Select a file:",
         help_text='max. 42 megabytes')
     lib_location = forms.ChoiceField(
@@ -9,7 +9,7 @@ class BookForm(forms.Form):
         ("4", "Anza"),
         ("5", "Bayview"),
         ("6", "Bernal Heights"),
-        ("32", "Branch Bookmobile 1"), 
+        ("32", "Branch Bookmobile 1"),
         ("8", "Chinatown"),
         ("9", "Eureka Valley"),
         ("10", "Excelsior"),
@@ -17,7 +17,7 @@ class BookForm(forms.Form):
         ("12", "Golden Gate Valley"),
         ("13", "Ingleside"),
         ("14", "Library on Wheels"),
-        ("3", "Main Library"),
+        ("3", "Main"),
         ("15", "Marina"),
         ("16", "Merced"),
         ("17", "Mission"),
@@ -33,10 +33,8 @@ class BookForm(forms.Form):
         ("27", "Presidio"),
         ("28", "Richmond"),
         ("29", "Sunset"),
-        ("30", "Visitaction Valley"),
+        ("30", "Visitacion Valley"),
         ("31", "West Portal"),
         ("34", "Western Addition"),
 
-        ],
-
-        label="Library Branch")
+        ])

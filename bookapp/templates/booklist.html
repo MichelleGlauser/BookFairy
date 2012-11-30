@@ -6,8 +6,8 @@
 
 <!-- empty lists evaluate to False in a Boolean context in Python and Django -->
 {% if booklist %}
-    <h1 style="font-family: Oldenburg; color: #CC66FF">Hurry to the library, because these books are checked in:</h1>
-    <ul>
+    <h2 style="font-family: Verdana; color: #6AF0D1">Hurry to the library, because these books are checked in:</h2>
+    <ul type = none>
     {% for book in booklist %}
         <li>{{ book.0 }}, {{ book.1 }} </li>
     {% endfor %}
