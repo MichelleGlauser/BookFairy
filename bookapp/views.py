@@ -184,6 +184,20 @@ def create_gr_url(gr_search_query):
 
 
 # to retrieve the Goodreads rating 
+def find_gr_ratings(gr_url):
+    url = "http://www.goodreads.com/search?utf8=%E2%9C%93&q=atlas+shrugged+ayn+rand&search_type=books"
+    # requests gr_url 
+    response = requests.get(gr_url)
+    # retrieves content from gr_url
+    data = pq(response.content)
+    # gets to the correct area of html
+    area = data("span.minirating").eq(0)
+    a = data(area)
+    # pulls out rating avg and number of ratings
+    gr_rating = a.text()
+    return gr_rating
+
+# to retrieve the Goodreads rating 
 # def find_gr_ratings(gr_url):
 #     # example_url = "http://www.goodreads.com/search?utf8=%E2%9C%93&q=atlas+shrugged+ayn+rand&search_type=books"
 #     # requests gr_url 

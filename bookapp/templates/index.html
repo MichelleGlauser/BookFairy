@@ -3,8 +3,8 @@
 {% block title %}{% endblock %}
 
 {% block content %}
-<div class="title">
-<h3 style="font-family: Oldenburg; color: #CC66FF";>Choose a file (with book title and author) from your computer and we'll use a little fairy dust to see which items are checked in!</h3>
+<div class="directions">
+    <p>Choose a file (with book title and author) from your computer and we'll use a little fairy dust to see which items are checked in.</p>
 </div>
 
 <div class="body">
@@ -13,7 +13,6 @@
         {% csrf_token %}
         {{ form.as_p }}
     <input type="submit" name="content" class="input" id="description">
-<!--     <button type="submit">Submit</button> --> <!-- #I turned this off because it makes two submit buttons. ? -->
     </form>
   </div>
 </div>

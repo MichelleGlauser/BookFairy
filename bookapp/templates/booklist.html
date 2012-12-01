@@ -5,14 +5,27 @@
 {% block content %}
 
 <!-- empty lists evaluate to False in a Boolean context in Python and Django -->
-{% if booklist %}
-    <h2 style="font-family: Verdana; color: #6AF0D1">Hurry to the library, because these books are checked in:</h2>
-    <ul type = none>
-    {% for book in booklist %}
-        <li>{{ book.0 }}, {{ book.1 }} </li>
-    {% endfor %}
-    </ul>
-{% else %}
-    Sorry, no amount of fairy dust can check in any of these books for you. Check back again in a few days.
-{% endif %}
+    <div class="booklist">
+        {% if booklist %}
+            <h2 style="font-family: Verdana; color: #6AF0D1">Hurry to the library, because these books are checked in:</h2>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Book Title and Author</th>
+                        <th>Rating</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for book in booklist %}       
+                    <tr>
+                            <td>{{ book.0 }}</td>
+                            <td>{{ book.1 }}</td>
+                    </tr>
+                     {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            Sorry, no amount of fairy dust can check in any of these books for you. Check back again in a few days.
+        {% endif %}
+    </div>
 {% endblock %}

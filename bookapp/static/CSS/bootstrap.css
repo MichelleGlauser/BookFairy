@@ -172,8 +172,8 @@ a {
 }
 
 a:hover {
-  color: #005580;
-  text-decoration: underline;
+  color: #e0e0e0;
+  text-decoration: none;
 }
 
 .img-rounded {
@@ -947,8 +947,9 @@ textarea {
 }
 
 label {
-  display: block;
+  display: inline;
   margin-bottom: 5px;
+
 }
 
 select,

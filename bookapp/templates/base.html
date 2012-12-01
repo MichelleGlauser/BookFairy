@@ -1,21 +1,24 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <html lang="en">
 <meta charset=”utf-8”>
-<link href="bookapp/CSS/bootstrap.css" rel="stylesheet" media="screen">
-<link href="/bookapp/CSS/BookFairy.css" rel="stylesheet" media="screen"> <link href='http://fonts.googleapis.com/css?family=Montserrat+Alternates:400,700' rel='stylesheet' type='text/css'>
+<link href="/static/CSS/bootstrap.css" rel="stylesheet" media="screen">
+<link href="/static/CSS/BookFairy.css" rel="stylesheet" media="screen"> 
+<link href='http://fonts.googleapis.com/css?family=Montserrat+Alternates:400,700' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=Oldenburg' rel='stylesheet' type='text/css'>
 
 <head>
     <title>BookFairy | helping booklisters check the library a whole list at a time</title>
 </head>
-<body>
-    <div class="background" style="background-image:url(/bookapp/CSS/img/norwegianrose.png); background-repeat:repeat">
-    </div>
-        <div class="container">
-            <h1 style="font-family: Oldenburg; color: #CC66FF">BookFairy | helping booklisters check the library a whole list at a time</h1>
+<body>  
+    <div class="container">
+        <div class = "titlebox">
+        <a class="brand" href="#"><font size=18px">BookFairy:</font></br>helping booklisters check the library a whole list at a time</a>
         </div>
-    {% block content %}
-    {% endblock %}
+        <div id="main">
+            {% block content %}
+            {% endblock %}
+        </div> 
+    </div>
 
 </body>
 </html>

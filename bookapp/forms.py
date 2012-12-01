@@ -2,9 +2,9 @@ from django import forms
 
 class BookForm(forms.Form):
     book_file = forms.FileField(  # shows the choose file
-        label="Select a file:",
-        help_text='max. 42 megabytes')
+        label="Booklist File:")
     lib_location = forms.ChoiceField(
+        label="Library Location:",
         choices = [
         ("4", "Anza"),
         ("5", "Bayview"),
