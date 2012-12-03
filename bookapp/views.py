@@ -36,7 +36,8 @@ def extract_title_from_multiple(book_title, pq_data):
         # print tag.text, book_title
         score = fuzz.token_set_ratio(book_title, tag)
         score_pair = (score, tag)
-        if score > 50:
+        # Necessary? What if the score is below 50?
+        if score > 50: 
             scored_tags.append(score_pair)
 
     # Other way to write it:
@@ -47,9 +48,11 @@ def extract_title_from_multiple(book_title, pq_data):
     if not scored_tags:
         return None
 
+    #  
     best = scored_tags[-1]
+    print scored_tags
+    print best
     return best[1]
-
 
 def extract_title(book_title, html):
     pq_data = pq(html)
@@ -185,7 +188,7 @@ def create_gr_url(gr_search_query):
 
 # to retrieve the Goodreads rating 
 def find_gr_ratings(gr_url):
-    url = "http://www.goodreads.com/search?utf8=%E2%9C%93&q=atlas+shrugged+ayn+rand&search_type=books"
+    # url = "http://www.goodreads.com/search?utf8=%E2%9C%93&q=atlas+shrugged+ayn+rand&search_type=books"
     # requests gr_url 
     response = requests.get(gr_url)
     # retrieves content from gr_url
@@ -196,6 +199,55 @@ def find_gr_ratings(gr_url):
     # pulls out rating avg and number of ratings
     gr_rating = a.text()
     return gr_rating
+
+# to compare Goodreads authors and pick the best
+def filter_gr(gr_url):
+    url = 
+    response = requests.get(gr_url)
+    data = pq(response.content)
+    area = data("").eq(0)
+    a = data(area)
+
+    a_tags = pq_data("tr.briefCitRow tr:first-child>td>a")
+    
+    # print a_tags
+    # filtered_tags = []
+    # for tag in a_tags:
+    #     if tag != "":
+    #         filtered_tags.append(tag)
+
+    filtered_tags = [ tag.text for tag in a_tags if tag.text ]
+    # print filtered_tags
+    scored_tags = []
+    for tag in filtered_tags:
+        # print tag.text, book_title
+        score = fuzz.token_set_ratio(book_title, tag)
+        score_pair = (score, tag)
+        # Necessary? What if the score is below 50?
+        if score > 50: 
+            scored_tags.append(score_pair)
+
+    # Other way to write it:
+    # scored_tags = [ (fuzz.token_set_ratio(title, tag), tag) 
+    #                     for tag in filtered_tags ]
+
+    scored_tags.sort()
+    if not scored_tags:
+        return None
+
+    #  
+    best = scored_tags[-1]
+    print scored_tags
+    print best
+    return best[1]
+
+    get title and author using pyquery 
+    put title and author into lists and use fuzzywuzzy to rate
+    sort lists
+    how to connect the lists?
+    choose book with highest correlation between search and title and author
+    put rating into the list to be put on the booklist page
+
 
 # to retrieve the Goodreads rating 
 # def find_gr_ratings(gr_url):
@@ -219,10 +271,3 @@ def find_gr_ratings(gr_url):
 
 
 
-# def filter_gr_ratings(gr_ratings):
-#     get title and author using pyquery 
-#     put title and author into lists and use fuzzywuzzy to rate
-#     sort lists
-#     how to connect the lists?
-#     choose book with highest correlation between search and title and author
-#     put rating into the list to be put on the booklist page
