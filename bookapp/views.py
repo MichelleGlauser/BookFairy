@@ -13,66 +13,63 @@ def enter_search(request):
     form = BookForm() # An unbound form
     return render(request, "index.html", {"form": form})
 
-def extract_title_from_single(pq_data):
+def extract_details_from_single(pq_data):
     bib_info_list = pq_data("td.bibInfoData")
     if not bib_info_list:
         return None
     title_td = bib_info_list[2]
-    return title_td.text_content()
+    title_text = title_td.text_content()
 
-def extract_title_from_multiple(book_title, pq_data):
-    a_tags = pq_data("tr.briefCitRow tr:first-child>td>a")
+    author_td = bib_info_list[1]
+    author_text = author_td.text_content()
+
+    return (title_text, author_text)
+
+def extract_details_from_multiple(book_title, author, pq_data):
+    book_trs = pq_data("tr.briefCitRow")
+
+    biblio_info = []
+    for book_tr in book_trs:
+        query_obj = pq(book_tr)
+        title = query_obj("table")[1].getchildren()[0].text_content().strip()
+        author = query_obj("table")[1].getchildren()[1].text_content().strip()
+        if author:
+            biblio_info.append( (title, author) )
     
-    # print a_tags
-    # filtered_tags = []
-    # for tag in a_tags:
-    #     if tag != "":
-    #         filtered_tags.append(tag)
-
-    filtered_tags = [ tag.text for tag in a_tags if tag.text ]
-    # print filtered_tags
-    scored_tags = []
-    for tag in filtered_tags:
-        # print tag.text, book_title
-        score = fuzz.token_set_ratio(book_title, tag)
-        score_pair = (score, tag)
-        # Necessary? What if the score is below 50?
-        if score > 50: 
-            scored_tags.append(score_pair)
-
-    # Other way to write it:
-    # scored_tags = [ (fuzz.token_set_ratio(title, tag), tag) 
-    #                     for tag in filtered_tags ]
-
-    scored_tags.sort()
-    if not scored_tags:
+    if not biblio_info:
         return None
 
-    #  
-    best = scored_tags[-1]
-    print scored_tags
-    print best
-    return best[1]
+    scored_info = []
+    
+    for info in biblio_info:
+        title_score = fuzz.token_set_ratio(info[0], book_title)
+        author_score = fuzz.token_set_ratio(info[1], author)
+        total_score = title_score + author_score
+        scored_info.append( (total_score, info) )
 
-def extract_title(book_title, html):
+    scored_info.sort()
+    return scored_info[-1][1]
+
+def extract_details(book_title, author, html):
     pq_data = pq(html)
-    title = extract_title_from_single(pq_data)
-    if not title:
-        title = extract_title_from_multiple(book_title, pq_data)
+    details = extract_details_from_single(pq_data)
+    if not details:
+        details = extract_details_from_multiple(book_title, author, pq_data)
 
-    return title
+    return details
 
-
-def get_library_title(book, library):
+def get_library_details(book, author, library):
     url = create_library_url(book, library)
     response = requests.get(url).content
-    title = extract_title(book, response)
-    return title
+    details = extract_details(book, author, response)
+    return details
 
-def get_details(book, library):
-    title = get_library_title(book, library)
-    if not title:
+def get_details(book, author, library):
+    details = get_library_details(book, author, library)
+    if not details:
         return None
+    title = details[0]
+    library_author = details[1]
     rating = get_goodreads_rating(book)
     return (title, rating)
 
@@ -89,21 +86,10 @@ def check_books(request):
     gr_rating = 0
     booklist = process_book_file(book_file) # returns booklist list
     checked_in_books = []
-    for book in booklist:
-        details = get_details(book, lib_location)
+    for book_title, author in booklist:
+        details = get_details(book_title, author, lib_location)
         if details:
             checked_in_books.append(details)
-        # library_base_url = create_library_url(book, lib_location)
-        # if check_if_in(library_base_url) == True:
-        #     gr_url = create_gr_url(book)
-        #     gr_rating = find_gr_rating(gr_url) #returns gr_rating
-        #     checked_in_books.append( (book, gr_rating) )
-        #     # put these in printed booklist in html: 
-            # {{ booklist }}, {{ gr_rating }}
-            # HOW? THE RATINGS NEED TO BE ASSIGNED! 
-            # booklist = iter(booklist) # says needs 2 length
-            # booklist_dict = dict(zip(booklist, ))
-            # b = dict(zip(i, i))
             print "processed!"
     # print booklist
     sorry_msg = """
@@ -119,10 +105,10 @@ def check_books(request):
 def process_book_file(book_file):
     booklist = []
     for line in book_file:
-        # add books to a list
-        booklist.append(line)
-        # print book_titles
-    booklist[0].split('\r')
+        comma_index = line.rindex(",")
+        title = line[:comma_index].strip()
+        author = line[comma_index + 1:].strip()
+        booklist.append((title, author))
     return booklist
 
 
@@ -201,14 +187,14 @@ def find_gr_ratings(gr_url):
     return gr_rating
 
 # to compare Goodreads authors and pick the best
-def filter_gr(gr_url):
-    url = 
+def extract_gr_titles_and_authors(gr_url):
+    # url = 
     response = requests.get(gr_url)
     data = pq(response.content)
-    area = data("").eq(0)
+    area = data("td").eq(1)
     a = data(area)
 
-    a_tags = pq_data("tr.briefCitRow tr:first-child>td>a")
+    a_tags = pq_data("tr.print Row tr:first-child>td>a")
     
     # print a_tags
     # filtered_tags = []
@@ -241,33 +227,11 @@ def filter_gr(gr_url):
     print best
     return best[1]
 
-    get title and author using pyquery 
-    put title and author into lists and use fuzzywuzzy to rate
-    sort lists
-    how to connect the lists?
-    choose book with highest correlation between search and title and author
-    put rating into the list to be put on the booklist page
+# STEPS:
 
-
-# to retrieve the Goodreads rating 
-# def find_gr_ratings(gr_url):
-#     # example_url = "http://www.goodreads.com/search?utf8=%E2%9C%93&q=atlas+shrugged+ayn+rand&search_type=books"
-#     # requests gr_url 
-#     response = requests.get(gr_url)
-#     # retrieves content from gr_url
-#     data = pq(response.content)
-
-#     books = data("tr[itemtype='http://schema.org/Book']")
-
-#     # gets to the correct area of html
-#     area = data("span.minirating").eq(0)
-#     a_info = data(b).children("td").eq(1) ??
-#     b_info = data(a_info).children("a.bookTitle")
-    
-#     a = data(area)
-#     # pulls out rating avg and number of ratings
-#     gr_ratings = a.text()
-#     return gr_ratings
-
-
+#     get title and author from library and GR using pyquery 
+#     use fuzzywuzzy to compare to split query lines
+#     how to connect the lists?
+#     choose book with highest correlation between search and title and author
+#     put rating into the list to be put on the booklist page
 
