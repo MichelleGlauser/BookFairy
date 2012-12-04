@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 from fuzzywuzzy import fuzz
 
 
-# BOOKLIST UPLOADING
+# BOOK UPLOAD 
 def process_book_file(book_file):
     booklist = []
     for line in book_file:
@@ -20,6 +20,7 @@ def process_book_file(book_file):
 
 
 # LIBRARY SEARCHING
+
 # to retrieve the SFPL site url for any book
 def create_library_url(search_query, lib_location = "3"):
     #PROMPT
@@ -96,13 +97,13 @@ def get_library_details(book, author, library):
     return details
 
 
-def get_details(book, author, library, library_base_url):
+def get_details(book, author, library):
     details = get_library_details(book, author, library)
     if not details:
         return None
     title = details[0]
     library_author = details[1]
-    rating = find_gr_ratings(gr_url)
+    rating = get_goodreads_rating(book)
     return (title, rating)
 
 
@@ -117,10 +118,10 @@ def check_books(request):
     lib_location = form.cleaned_data['lib_location']
     # print "%r"%lib_location 
     gr_rating = 0
-    booklist = process_book_file(book_file) # returns list of title and author
+    booklist = process_book_file(book_file) # returns booklist list
     checked_in_books = []
     for book_title, author in booklist:
-        details = get_details(book_title, author, lib_location, library_base_url)
+        details = get_details(book_title, author, lib_location)
         if details:
             checked_in_books.append(details)
             print "processed!"
@@ -159,6 +160,7 @@ def check_if_in(library_base_url):
 
 
 # GOODREADS SEARCHING
+
 # to retrieve the Goodreads site url for any book
 def create_gr_url(search_query):
     joined_query = "+".join(search_query.split())
@@ -180,27 +182,27 @@ def score_gr_details(search_query):
     author_info = pq_data(all_info).find("a.authorName").eq(0)
     # will books here
 
-    biblio_info = []
-    for book in books: # or is it for book in book_info ?
-        # query_obj = pq(book)
-        title = pq_data(book_info).text().strip()
-        author = pq_data(author_info).text().strip()
-        if author:
-            biblio_info.append( (title, author) )
-    
-    if not biblio_info:
-        return None
+        biblio_info = []
+        for book in books: # or is it for book in book_info ?
+            # query_obj = pq(book)
+            title = pq_data(book_info).text().strip()
+            author = pq_data(author_info).text().strip()
+            if author:
+                biblio_info.append( (title, author) )
+        
+        if not biblio_info:
+            return None
 
-    scored_info = []
-    
-    for info in biblio_info:
-        title_score = fuzz.token_set_ratio(info[0], book_title)
-        author_score = fuzz.token_set_ratio(info[1], author)
-        total_score = title_score + author_score
-        scored_info.append( (total_score, info) )
+        scored_info = []
+        
+        for info in biblio_info:
+            title_score = fuzz.token_set_ratio(info[0], book_title)
+            author_score = fuzz.token_set_ratio(info[1], author)
+            total_score = title_score + author_score
+            scored_info.append( (total_score, info) )
 
-    scored_info.sort()
-    return scored_info[-1][1]
+        scored_info.sort()
+        return scored_info[-1][1]
 
 
 # to retrieve the Goodreads rating 
@@ -220,20 +222,15 @@ def find_gr_ratings(gr_url):
 
 def get_gr_details(search_query):
     url = create_gr_url(search_query)
-    rating = find_gr_ratings(gr_url) # call this one twice?
-    scored_info = score_gr_details(search_query)
+    rating = find_gr_ratings(gr_url)
+    scored_info = score_gr_details()
     return rating
 
 # # STEPS:
 
-# upload file, split into title and author
-# create a SFPL URL for the title, then request
-# check the title against the SFPL search results using fuzzywuzzy
-# check the author against the SFPL search results using fuzzywuzzy
-# add fuzzywuzzy correlation percentages and return best
-# check for availability for highest correlated items
-# create the Goodreads URL
-# check the title and author against GR search results using fuzzywuzzy
-# add fuzzywuzzy correlation percentages and return best
-# check for Goodreads rating for highest correlated item
-# put checked in books and Goodreads ratings in a list that prints on the page
+# #     get title and author from library and GR using pyquery 
+# #     use fuzzywuzzy to compare to split query lines
+# #     how to connect the lists?
+# #     choose book with highest correlation between search and title and author
+# #     put rating into the list to be put on the booklist page
+
