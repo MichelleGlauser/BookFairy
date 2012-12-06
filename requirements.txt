@@ -3,3 +3,4 @@ South==0.7.6
 wsgiref==0.1.2
 pyquery
 requests
+dj-database-url==0.2.0
