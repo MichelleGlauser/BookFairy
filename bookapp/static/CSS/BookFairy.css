@@ -20,7 +20,7 @@ body {
 
 
 .container {
-    width: 800px; /*scroll to the side bar not b/c of this*/
+    width: 800px;
     height: 480px;
     overflow:auto;
     margin-left: auto;

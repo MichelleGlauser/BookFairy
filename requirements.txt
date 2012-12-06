@@ -10,3 +10,4 @@ gunicorn==0.16.1
 pyquery==1.2.2
 requests==0.14.2
 wsgiref==0.1.2
+jQuery==1.6.0_37
