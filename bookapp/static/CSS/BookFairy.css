@@ -21,8 +21,8 @@ body {
 
 .container {
     width: 800px;
-    height: 480px;
-    overflow:auto;
+/*    height: 480px;*/
+/*    overflow: auto;*/
     margin-left: auto;
     margin-right: auto;
     margin-top: 67px;
