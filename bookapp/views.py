@@ -34,13 +34,14 @@ def create_library_url(search_query, lib_location = "3"):
     #SETTING UP COMPONENTS OF SEARCH URL 
     # searchscope=library location
     # m=media type (a=book)
-    list = ["?SEARCH=", joined_query, "&x=0&y=0&searchscope=", lib_location, "&p=&m=a&Da=&Db=&SORT=D&availlim=1"]
+    list = ["?SEARCH=", joined_query, "&x=0&y=0&searchscope=", lib_location, "&p=&l=eng&m=a&Da=&Db=&SORT=D&availlim=1"]
     #START OF THE URL
     library_base_url = "http://sflib1.sfpl.org/search/X"
 
     # STICK THE PARTS TOGETHER TO CREATE A URL WITH THE SEARCH
     for item in list:
         library_base_url += item
+        print library_base_url
     
     # print "LIB_URL=", library_base_url
     return library_base_url
