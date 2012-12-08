@@ -67,7 +67,7 @@ MEDIA_URL = ''
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
 #STATIC_ROOT = '/Users/michelleglauser/Desktop/BookFairy/bookapp/static'
-STATIC_ROOT = root("static")
+STATIC_ROOT = root("bookapp", "static")
 
 
 

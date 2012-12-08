@@ -17,10 +17,12 @@ def enter_search(request):
 def process_book_file(book_file):
     booklist = []
     for line in book_file:
-        comma_index = line.rindex(",")
-        title = line[:comma_index].strip()
-        author = line[comma_index + 1:].strip()
-        booklist.append((title, author))
+        comma_index = line.rfind(",")
+        if comma_index != -1:
+            title = line[:comma_index].strip()
+            author = line[comma_index + 1:].strip()
+            booklist.append((title, author))
+    print booklist
     return booklist
 
 
