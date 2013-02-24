@@ -13,3 +13,4 @@ class BookList(models.Model):
     user = models.ForeignKey(User, related_name="booklists") # imported from django.contrib.auth.models
     books = models.ManyToManyField(Book, related_name="lists")
 
+
