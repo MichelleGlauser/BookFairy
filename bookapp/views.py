@@ -7,6 +7,10 @@ from django.template import RequestContext
 from django.core.urlresolvers import reverse
 from fuzzywuzzy import fuzz
 
+# authenticate users
+def 
+
+
 # to retrieve book info -- is this function still doing something?
 def enter_search(request):
     # print "Stuff"

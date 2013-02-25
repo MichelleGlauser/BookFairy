@@ -26,7 +26,7 @@ urlpatterns = patterns('',
 )
 
 # Example on StackOverflow has a urls.py in the project folder 
-# as well as the ap folder for the Project URLs and the App URLs
+# as well as the app folder for the Project URLs and the App URLs
 # the below is for the App URLs
 # # -*- coding: utf-8 -*-
 # from django.conf.urls.defaults import patterns, url

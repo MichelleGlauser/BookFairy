@@ -2,7 +2,7 @@
 import os
 
 here = lambda * x: os.path.join(os.path.abspath(os.path.dirname(__file__)), *x)
-PROJECT_ROOT = here("..") #?
+PROJECT_ROOT = here('..', include('registration.backends.default.urls')), #?
 root = lambda * x: os.path.join(os.path.abspath(PROJECT_ROOT), *x)
 
 ADMINS = (
@@ -115,14 +115,17 @@ TEMPLATE_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
 )
 
+ACCOUNT_ACTIVATION_DAYS = 7 # One-week activation window; you may, of course, use a different value.
+
 DJANGO_APPS = (
-    "django.contrib.auth",
+    'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
+    'registration',
 )
 
 THIRD_PARTY_APPS = (
