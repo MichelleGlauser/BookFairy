@@ -1,0 +1,22 @@
+{ % extends "base.html" % }
+{% block content %}
+<form action="" method="post">
+
+<!-- Cross-site request forgery: it limits posts from this form to the domain the form is on so you can't submit to the form from a different domain. No cross-site scripting attacks. If embedding in iFrame in a different domain, you need to use the csrf_exempt decorator. -->
+{% csrf_token %}
+{% if form.errors %}<p>Please correct the following fields:</p>{% endif %}
+<div class="register_div">
+    {% if form.username.errors %} <p class="error">{{ form.username.errors }}</p>{% endif %}
+    <p><label for="username"{% if form.username.errors %} class ="error"{% endif %}>Username:</label></p>
+    <p>{{ form.username }} </p>
+</div>
+<div class="register_div"
+    {% if form.password1.errors %}<p class="error">{{ form.password1.errors }}</p>{% endif %}
+    <p><label for="password1"{% if form.password1.errors %} class ="error"{% endif %}>Verify password:</label></p>
+    <p>{{ form.password1 }} </p>
+</div>
+<p><input type="submit" alt="register" />Submit</p>
+</form>
+
+<!-- {( form.as_p )} ?-->
+{% endblock %}

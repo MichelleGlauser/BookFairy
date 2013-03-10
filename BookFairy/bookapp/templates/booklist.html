@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}BookFairy | helping booklisters check the library a whole list at a time{% endblock %}
+
+{% block content %}
+
+<!-- empty lists evaluate to False in a Boolean context in Python and Django -->
+    <div class="booklist">
+        {% if booklist %}
+            <h4 style="font-family: Verdana; color: #6AF0D1">Hurry to the library, because these books are checked in now:</h4>
+        </br>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Book Title and Author</th>
+                        <th>Rating</th>
+                    </tr>
+                </thead>
+                <script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-36906406-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+                <tbody>
+                    {% for book in booklist %}       
+                    <tr>
+                            <td>{{ book.0 }}</td>
+                            <td>{{ book.1 }}</td>
+                    </tr>
+                     {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            Sorry, no amount of fairy dust can check in any of these books for you. Check back again in a few days.
+        {% endif %}
+    </br>
+    <p>Connect with me at <a href="http://michelleglauser.blogspot.com">michelleglauser.blogspot.com</a> or <a href="http://twitter.com/michelleglauser">@MichelleGlauser</a>. 
+    </p>
+    <p>Please <a href="mailto:michelleglauser@gmail.com">email me</a> to report problems. (I'm new at this.) 
+    </p>
+    </div>
+{% endblock %}
