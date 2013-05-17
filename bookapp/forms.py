@@ -1,4 +1,14 @@
+# Hi
+
 from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+
+
+# creates a form out of the model
+from django.forms import ModelForm
+from bookapp.models import Bookie
+
 
 class BookForm(forms.Form):
     book_file = forms.FileField(  # shows the choose file
@@ -38,3 +48,13 @@ class BookForm(forms.Form):
         ("34", "Western Addition"),
 
         ])
+
+
+# from Kenneth Love's advice:
+class RegistrationForm(UserCreationForm):
+    name = forms.CharField("Name")
+
+class LoginForm(forms.Form):
+    username = forms.CharField(label=(u'User Name'))
+    password = forms.CharField(label=(u'Password'), widget=forms.PasswordInput(render_value=False))
+    

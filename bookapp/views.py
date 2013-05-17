@@ -1,21 +1,89 @@
+# Hi
+
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, render_to_response, redirect
+from django.db.models.signals import post_save
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login, logout
 from forms import BookForm
 from pyquery import PyQuery as pq
 import requests
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
 from fuzzywuzzy import fuzz
+from bookapp.forms import RegistrationForm, LoginForm
+from bookapp.models import Bookie
+import fastpass 
+
+
+
+def registration(request):
+    if request.user.is_authenticated():
+        return HttpResponseRedirect('profile/')
+
+    form = RegistrationForm(request.POST or None)
+    if form.is_valid():
+        user = form.save()
+        bookie = Bookie.objects.create(
+            user=user,
+            name=form.cleaned_data['name'],
+        )
+        return HttpResponseRedirect('/profile/')
+    return render_to_response(
+        'register.html',
+        {'form': form},
+        context_instance=RequestContext(request)
+    )
+
+
 
 # authenticate users
-def 
+def register_user(request):
+    pass
 
+
+# log in users
+def let_user_in(request):
+    username = request.POST['username']
+    password = request.POST['password']
+    user = authenticate(username=username, password=password)
+    if user is not None:
+        if user.is_active:
+            login(request, user)
+        #redirect to a success page.
+        else:
+            # Return a 'disabled account' error message
+            print "This account has been disabled."
+    else:
+        # Return an 'invalid login' error message.
+        pass
+
+
+def kick_user_out(request):
+    logout(request)
+    #redirect to a success page
 
 # to retrieve book info -- is this function still doing something?
 def enter_search(request):
     # print "Stuff"
+    user = request.user
+    if user:
+        key = 'vlhgdwifodws'
+        secret = 'r1uzc0ggw46mhgfq8cenabdqz5r85vn8'
+        # name = user.username
+        # uid = user.id
+        # email = user.email
+        name = 'Michelle'
+        uid = '5408730'
+        email = 'michelleglauser@gmail.com'
+        fp = fastpass.FastPass()
+        script = fp.script(key, secret, email, name, uid, isSecure=False)
+    else:
+        script = None
     form = BookForm() # An unbound form
-    return render(request, "index.html", {"form": form})
+    return render(request, "index.html", {"form": form, 'script': script})
+
+
 
 # BOOKLIST UPLOADING
 def process_book_file(book_file):

@@ -1,8 +1,9 @@
 # Django settings for BookFairy project.
 import os
+import fastpass
 
 here = lambda * x: os.path.join(os.path.abspath(os.path.dirname(__file__)), *x)
-PROJECT_ROOT = here('..', include('registration.backends.default.urls')), #?
+PROJECT_ROOT = here('..') #?
 root = lambda * x: os.path.join(os.path.abspath(PROJECT_ROOT), *x)
 
 ADMINS = (
@@ -13,7 +14,13 @@ MANAGERS = ADMINS #ensures the variables are equal
 
 #you can set more than one database (user, content, mongoDB for statistics)
 # Parse database configuration from $DATABASE_URL
-DATABASES = {}
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'bookfairy_db',                      
+        'USER': 'django',
+        'HOST': 'localhost',
+    }}
 
 
 # Local time zone for this installation. Choices can be found here:
@@ -126,6 +133,7 @@ DJANGO_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'registration',
+    'bookapp',
 )
 
 THIRD_PARTY_APPS = (
@@ -142,6 +150,9 @@ try:
     from local_settings import *
 except ImportError:
     pass
+
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to

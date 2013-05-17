@@ -3,6 +3,8 @@ from bookapp import views
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.contrib.auth.views import login, logout
+from registration.backends.default.urls import *
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
@@ -20,6 +22,10 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', 'bookapp.views.enter_search'),
     url(r'^booklist/$', 'bookapp.views.check_books'),
+    url(r'^register/$', 'bookapp.views.registration'),
+    url(r'^login/$', login, {'template_name': 'login.html'}),
+    url(r'^logout/$', logout, {'template_name': 'logout.html'}),
+    # url(r'^accounts/profile/$', redirect_to, {'url':'{'template_name': 'profile.html'})
     # url(r'^booklist/$', views.make_booklist, name='booklist'),
     # url(r'^booksearch/$', views.upload_file),
     # + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #?

@@ -1,8 +1,16 @@
  {% extends "base.html" %}
 
 {% block title %}{% endblock %}
-
 {% block content %}
+<div>
+  {% if user.is_authenticated %}
+  <p>Hello, {{user.username}}!</p>
+  {% else %}
+  <p><a href="/login/">Log in</a></p>
+  <p><a href="/register/">Sign up</p>
+  {% endif %}
+  <p><a href="https://getsatisfaction.com/blabbergasted">Community</p>
+</div>
 <div class="directions">
     <p>Upload a booklist (in "title, author" form in .txt file <a href="https://docs.google.com/document/d/1no3E2SmZ1Pwv1rrIs77RGFUvU4IdQf4r7epeN41qJoQ/edit"> like this</a>) and choose a branch of SFPL, and we'll use a little fairy dust to see if the books are checked in.</p>
   </br>

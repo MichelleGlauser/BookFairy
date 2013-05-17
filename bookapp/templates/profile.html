@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+<form method="POST">
+<p>You're now logged in!</p>
+{% csrf_token %}
+</form>
+{% endblock %}
