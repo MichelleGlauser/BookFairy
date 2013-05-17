@@ -2,12 +2,12 @@ import oauth
 import cgi
 
 class FastPass:
-  domain = "michelleglauser.jarg0n.com"
+  domain = "getsatisfaction.com/blabbergasted"
   
   @staticmethod
   def url(key, secret, email, name, uid, isSecure=False, **additionalFields):
     consumer = oauth.OAuthConsumer(key, secret)
-    url = "http://%s/fastpass" % FastPass.domain
+    url = "https://%s/fastpass" % FastPass.domain
     if isSecure:
       url = "https://%s/fastpass" % FastPass.domain
     params = dict(email = email, name = name, uid = uid)

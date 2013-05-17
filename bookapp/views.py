@@ -70,10 +70,10 @@ def enter_search(request):
     if user:
         key = 'vlhgdwifodws'
         secret = 'r1uzc0ggw46mhgfq8cenabdqz5r85vn8'
-        # name = user.username
+        name = user.username
         # uid = user.id
         # email = user.email
-        name = 'Michelle'
+        # name = 'Michelle'
         uid = '5408730'
         email = 'michelleglauser@gmail.com'
         fp = fastpass.FastPass()
