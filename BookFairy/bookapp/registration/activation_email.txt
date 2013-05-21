@@ -1,7 +1,0 @@
-Here is your activation key for BookFairy: 
-
-activation_key
-
-Please click here: site
-
-This key will expire in: expiration_days
