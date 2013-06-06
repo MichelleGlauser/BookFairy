@@ -55,7 +55,7 @@ class FastPass:
 # print FastPass.script(
 #   "xi2vaxgpp06m", 
 #   "ly68der0hk8idfr5c73ozyq56jpwstd1", 
-#   "scott@getsatisfaction.com", 
+#   "michelleglauser@getsatisfaction.com", 
 #   "Scott", 
 #   "nullstyle",
 #   False,

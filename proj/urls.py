@@ -23,8 +23,9 @@ urlpatterns = patterns('',
     url(r'^$', 'bookapp.views.enter_search'),
     url(r'^booklist/$', 'bookapp.views.check_books'),
     url(r'^register/$', 'bookapp.views.registration'),
-    url(r'^login/$', login, {'template_name': 'login.html'}),
+    url(r'^login/$', 'bookapp.views.login'),
     url(r'^logout/$', logout, {'template_name': 'logout.html'}),
+    url(r'^profile/$', 'bookapp.views.show_profile')
     # url(r'^accounts/profile/$', redirect_to, {'url':'{'template_name': 'profile.html'})
     # url(r'^booklist/$', views.make_booklist, name='booklist'),
     # url(r'^booksearch/$', views.upload_file),

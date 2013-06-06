@@ -5,6 +5,7 @@ from django.shortcuts import render, render_to_response, redirect
 from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
+from django.conf import settings
 from forms import BookForm
 from pyquery import PyQuery as pq
 import requests
@@ -27,6 +28,7 @@ def registration(request):
         bookie = Bookie.objects.create(
             user=user,
             name=form.cleaned_data['name'],
+            # figure out how to get email
         )
         return HttpResponseRedirect('/profile/')
     return render_to_response(
@@ -35,7 +37,27 @@ def registration(request):
         context_instance=RequestContext(request)
     )
 
+def show_profile(request):
+    return render_to_response(
+        'profile.html',
+        context_instance=RequestContext(request)
+    )
 
+def fp_login(request):
+    login(request)
+    user = request.user
+    FastPass.script(
+#   "xi2vaxgpp06m", 
+#   "ly68der0hk8idfr5c73ozyq56jpwstd1", 
+#   "scott@getsatisfaction.com", 
+#   "Scott", 
+#   "nullstyle",
+#   False,
+#   foo = "bar")
+    # do single-sign on for user
+    # call login(request), 
+    # grab user 
+    return render_to_response
 
 # authenticate users
 def register_user(request):
@@ -304,6 +326,8 @@ def get_gr_details(search_query):
     rating = find_gr_ratings(gr_url) # call this one twice?
     scored_info = score_gr_details(search_query)
     return rating
+
+
 
 # # STEPS:
 
