@@ -1,6 +1,7 @@
 # Django settings for BookFairy project.
 import os
 import fastpass
+import dj_database_url
 
 here = lambda * x: os.path.join(os.path.abspath(os.path.dirname(__file__)), *x)
 PROJECT_ROOT = here('..') #?
@@ -22,6 +23,10 @@ DATABASES = {
         'HOST': 'localhost',
     }}
 
+#  From Heroku Django guide:
+DATABASES['default'] =  dj_database_url.config()
+# Honor the 'X-Forwarded-Proto' header for request.is_secure()
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -154,8 +159,8 @@ except ImportError:
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 
-KEY = 
-SECRET = 
+KEY = 'vlhgdwifodws'
+SECRET = 'r1uzc0ggw46mhgfq8cenabdqz5r85vn8'
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
