@@ -14,7 +14,7 @@ from django.core.urlresolvers import reverse
 from fuzzywuzzy import fuzz
 from bookapp.forms import RegistrationForm, LoginForm
 from bookapp.models import Bookie
-import fastpass 
+# import fastpass 
 
 
 
@@ -43,21 +43,21 @@ def show_profile(request):
         context_instance=RequestContext(request)
     )
 
-def fp_login(request):
-    login(request)
-    user = request.user
-    FastPass.script(
-#   "xi2vaxgpp06m", 
-#   "ly68der0hk8idfr5c73ozyq56jpwstd1", 
-#   "scott@getsatisfaction.com", 
-#   "Scott", 
-#   "nullstyle",
-#   False,
-#   foo = "bar")
-    # do single-sign on for user
-    # call login(request), 
-    # grab user 
-    return render_to_response
+# def fp_login(request):
+#     login(request)
+#     user = request.user
+#     FastPass.script(
+# #   "xi2vaxgpp06m", 
+# #   "ly68der0hk8idfr5c73ozyq56jpwstd1", 
+# #   "scott@getsatisfaction.com", 
+# #   "Scott", 
+# #   "nullstyle",
+# #   False,
+# #   foo = "bar")
+#     # do single-sign on for user
+#     # call login(request), 
+#     # grab user 
+#     return render_to_response
 
 # authenticate users
 def register_user(request):
@@ -90,20 +90,21 @@ def enter_search(request):
     # print "Stuff"
     user = request.user
     if user:
-        key = 'vlhgdwifodws'
-        secret = 'r1uzc0ggw46mhgfq8cenabdqz5r85vn8'
+        # key = 'vlhgdwifodws'
+        # secret = 'r1uzc0ggw46mhgfq8cenabdqz5r85vn8'
         name = user.username
         # uid = user.id
         # email = user.email
         # name = 'Michelle'
         uid = '5408730'
         email = 'michelleglauser@gmail.com'
-        fp = fastpass.FastPass()
-        script = fp.script(key, secret, email, name, uid, isSecure=False)
+        # fp = fastpass.FastPass()
+        # script = fp.script(key, secret, email, name, uid, isSecure=False)
     else:
         script = None
     form = BookForm() # An unbound form
-    return render(request, "index.html", {"form": form, 'script': script})
+    return render(request, "index.html", {"form": form})
+    # return render(request, "index.html", {"form": form, 'script': script})
 
 
 
