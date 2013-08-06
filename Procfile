@@ -1,1 +1,1 @@
-web: python BookFairy/manage.py collectstatic --noinput; bin/gunicorn_django --workers=4 --bind=0.0.0.0:$PORT proj/prod_settings.p
+web: python manage.py collectstatic --noinput; bin/gunicorn_django --workers=4 --bind=0.0.0.0:$PORT proj/prod_settings.p
