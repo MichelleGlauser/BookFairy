@@ -2,7 +2,7 @@
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User, check_password
-import fastpass
+# import fastpass
 
 class Book(models.Model):
     title = models.CharField(max_length=255)
