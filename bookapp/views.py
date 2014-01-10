@@ -15,8 +15,7 @@ from fuzzywuzzy import fuzz
 from bookapp.forms import RegistrationForm, LoginForm
 from bookapp.models import Bookie
 # import fastpass 
-
-
+import gspread
 
 def registration(request):
     if request.user.is_authenticated():
@@ -43,21 +42,6 @@ def show_profile(request):
         context_instance=RequestContext(request)
     )
 
-# def fp_login(request):
-#     login(request)
-#     user = request.user
-#     FastPass.script(
-# #   "xi2vaxgpp06m", 
-# #   "ly68der0hk8idfr5c73ozyq56jpwstd1", 
-# #   "scott@getsatisfaction.com", 
-# #   "Scott", 
-# #   "nullstyle",
-# #   False,
-# #   foo = "bar")
-#     # do single-sign on for user
-#     # call login(request), 
-#     # grab user 
-#     return render_to_response
 
 # authenticate users
 def register_user(request):
@@ -84,28 +68,6 @@ def let_user_in(request):
 def kick_user_out(request):
     logout(request)
     #redirect to a success page
-
-# to retrieve book info -- is this function still doing something?
-def enter_search(request):
-    # print "Stuff"
-    user = request.user
-    if user:
-        # key = 'vlhgdwifodws'
-        # secret = 'r1uzc0ggw46mhgfq8cenabdqz5r85vn8'
-        name = user.username
-        # uid = user.id
-        # email = user.email
-        # name = 'Michelle'
-        uid = '5408730'
-        email = 'michelleglauser@gmail.com'
-        # fp = fastpass.FastPass()
-        # script = fp.script(key, secret, email, name, uid, isSecure=False)
-    else:
-        script = None
-    form = BookForm() # An unbound form
-    return render(request, "index.html", {"form": form})
-    # return render(request, "index.html", {"form": form, 'script': script})
-
 
 
 # BOOKLIST UPLOADING
@@ -209,6 +171,14 @@ def get_details(book, author, library, library_base_url):
     return (title, rating)
 
 
+def read_spreadsheet(google_url):
+    gc = gspread.login(sys.argv[1], sys.argv[2])
+    google_spread = gc.open("Books to Read")
+    # print 'after google_spread'
+    google_worksheet = google_spread.get_worksheet("To Read")
+    col_titles = google_worksheet.col_values(1) # Does gspread do 1 or 0?
+    print col_titles
+
 # to retrieve book info -- figure out with "upload_file" function
 def check_books(request):
     form = BookForm(request.POST, request.FILES) # A form bound to the POST data
@@ -217,10 +187,15 @@ def check_books(request):
     
     # Process the data in form.cleaned_data -- but what about the location data?
     book_file = form.cleaned_data['book_file']
+    google_url = form.cleaned_data['google_url']
     lib_location = form.cleaned_data['lib_location']
+    if book_file:
+        booklist = process_book_file(book_file) # returns list of title and author
+    elif google_url:
+        print google_url
+        booklist = read_spreadsheet(google_url)
     # print "%r"%lib_location 
     gr_rating = 0
-    booklist = process_book_file(book_file) # returns list of title and author
     checked_in_books = []
     for book_title, author in booklist:
         library_base_url = create_library_url(book_title, lib_location)

@@ -12,7 +12,11 @@ from bookapp.models import Bookie
 
 class BookForm(forms.Form):
     book_file = forms.FileField(  # shows the choose file
-        label="Booklist File:")
+        label="Booklist File:", required=False)
+    # Do I need these if the Google spreadsheet has open settings?
+    # google_user = forms.CharField (label="Google User Name:")
+    # google_pass = forms.CharField(label=(u'Google Password'), widget=forms.PasswordInput(render_value=False))
+    google_url = forms.URLField (label="Google Drive Spreadsheet URL:", required=False)
     lib_location = forms.ChoiceField(
         label="Library Location:",
         choices = [
