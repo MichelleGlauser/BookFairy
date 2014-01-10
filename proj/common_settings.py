@@ -143,6 +143,7 @@ DJANGO_APPS = (
 
 THIRD_PARTY_APPS = (
     # 'south',
+    # 'gunicorn',
 )
 
 LOCAL_APPS = (
