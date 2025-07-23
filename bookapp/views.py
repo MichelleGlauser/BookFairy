@@ -6,7 +6,7 @@ from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.conf import settings
-from forms import BookForm
+from .forms import BookForm
 from pyquery import PyQuery as pq
 import requests
 from django.template import RequestContext
@@ -59,7 +59,7 @@ def let_user_in(request):
         #redirect to a success page.
         else:
             # Return a 'disabled account' error message
-            print "This account has been disabled."
+            print("This account has been disabled.")
     else:
         # Return an 'invalid login' error message.
         pass
@@ -79,7 +79,7 @@ def process_book_file(book_file):
             title = line[:comma_index].strip()
             author = line[comma_index + 1:].strip()
             booklist.append((title, author))
-    print booklist
+    print(booklist)
     return booklist
 
 
@@ -100,7 +100,7 @@ def create_library_url(search_query, lib_location = "3"):
     # STICK THE PARTS TOGETHER TO CREATE A URL WITH THE SEARCH
     for item in list:
         library_base_url += item
-        print library_base_url
+        print(library_base_url)
     
     # print "LIB_URL=", library_base_url
     return library_base_url
@@ -177,7 +177,7 @@ def read_spreadsheet(google_url):
     # print 'after google_spread'
     google_worksheet = google_spread.get_worksheet("To Read")
     col_titles = google_worksheet.col_values(1) # Does gspread do 1 or 0?
-    print col_titles
+    print(col_titles)
 
 # to retrieve book info -- figure out with "upload_file" function
 def check_books(request):
@@ -192,7 +192,7 @@ def check_books(request):
     if book_file:
         booklist = process_book_file(book_file) # returns list of title and author
     elif google_url:
-        print google_url
+        print(google_url)
         booklist = read_spreadsheet(google_url)
     # print "%r"%lib_location 
     gr_rating = 0
@@ -202,7 +202,7 @@ def check_books(request):
         details = get_details(book_title, author, lib_location, library_base_url)
         if details:
             checked_in_books.append(details)
-            print "processed!"
+            print("processed!")
     # print booklist
     sorry_msg = """
     Sorry, no amount of fairy dust can check in 
@@ -222,11 +222,11 @@ def check_if_in(library_base_url):
     pyed_data = pq(response.content)
     # print pyed_data
     detail = pyed_data("p.detail").eq(0) #shows whole p class
-    print "DETAIL=", detail
+    print("DETAIL=", detail)
     area = pyed_data(detail).children("a") # looks like this does the same thing
-    print "AREA=", area
+    print("AREA=", area)
     href = pyed_data(area).attr("href") # this provides the URL without any tags
-    print href
+    print(href)
     fullURL = "http://sflib1.sfpl.org" + href
     # if href is None:
          

@@ -11,7 +11,7 @@ def filter_gr_ratings(url):
         all_info = pqd(book).children("td").eq(1)
         
         book_info = pqd(all_info).children("a.bookTitle")
-     = pqd(book_info).text()
+        book_dict['title'] = pqd(book_info).text()
  
         author_info = pqd(all_info).find("a.authorName")                                                                                                                                                                                      
         book_dict['author'] = pqd(author_info).text()
