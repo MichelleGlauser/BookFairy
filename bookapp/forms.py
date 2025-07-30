@@ -56,9 +56,9 @@ class BookForm(forms.Form):
 
 # from Kenneth Love's advice:
 class RegistrationForm(UserCreationForm):
-    name = forms.CharField("Name")
+    name = forms.CharField(label="Name")
 
 class LoginForm(forms.Form):
-    username = forms.CharField(label=('User Name'))
-    password = forms.CharField(label=('Password'), widget=forms.PasswordInput(render_value=False))
+    username = forms.CharField(label='User Name')
+    password = forms.CharField(label='Password', widget=forms.PasswordInput(render_value=False))
     

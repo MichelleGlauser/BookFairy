@@ -1,24 +1,47 @@
 # Hi
 
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, render_to_response, redirect
+from django.shortcuts import render, redirect
 from django.db.models.signals import post_save
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login as auth_login, logout
 from django.conf import settings
 from .forms import BookForm
 from pyquery import PyQuery as pq
 import requests
-from django.template import RequestContext
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from fuzzywuzzy import fuzz
 from bookapp.forms import RegistrationForm, LoginForm
 from bookapp.models import Bookie
 # import fastpass 
 import gspread
+import sys
+
+def enter_search(request):
+    """Main page view that displays the book search form."""
+    form = BookForm()
+    return render(request, 'index.html', {'form': form})
+
+def login(request):
+    """Login view for user authentication."""
+    if request.user.is_authenticated:
+        return HttpResponseRedirect('/profile/')
+    
+    form = LoginForm(request.POST or None)
+    if form.is_valid():
+        username = form.cleaned_data['username']
+        password = form.cleaned_data['password']
+        user = authenticate(username=username, password=password)
+        if user is not None and user.is_active:
+            auth_login(request, user)
+            return HttpResponseRedirect('/profile/')
+        else:
+            form.add_error(None, 'Invalid username or password.')
+    
+    return render(request, 'login.html', {'form': form})
 
 def registration(request):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         return HttpResponseRedirect('profile/')
 
     form = RegistrationForm(request.POST or None)
@@ -30,16 +53,16 @@ def registration(request):
             # figure out how to get email
         )
         return HttpResponseRedirect('/profile/')
-    return render_to_response(
+    return render(
+        request,
         'register.html',
-        {'form': form},
-        context_instance=RequestContext(request)
+        {'form': form}
     )
 
 def show_profile(request):
-    return render_to_response(
-        'profile.html',
-        context_instance=RequestContext(request)
+    return render(
+        request,
+        'profile.html'
     )
 
 
@@ -251,7 +274,7 @@ def create_gr_url(search_query):
 # to compare Goodreads authors and pick the best
 def score_gr_details(search_query):
     gr_url = create_gr_url(search_query)
-    response = requests.get(url)
+    response = requests.get(gr_url)
     pq_data = pq(response.content)
     books = pq_data("tr[itemtype='http://schema.org/Book']")
     all_info = pq_data(books).children("td").eq(1)
@@ -273,8 +296,8 @@ def score_gr_details(search_query):
     scored_info = []
     
     for info in biblio_info:
-        title_score = fuzz.token_set_ratio(info[0], book_title)
-        author_score = fuzz.token_set_ratio(info[1], author)
+        title_score = fuzz.token_set_ratio(info[0], search_query)
+        author_score = fuzz.token_set_ratio(info[1], search_query)
         total_score = title_score + author_score
         scored_info.append( (total_score, info) )
 
@@ -299,7 +322,7 @@ def find_gr_ratings(gr_url):
 
 def get_gr_details(search_query):
     url = create_gr_url(search_query)
-    rating = find_gr_ratings(gr_url) # call this one twice?
+    rating = find_gr_ratings(url)
     scored_info = score_gr_details(search_query)
     return rating
 
