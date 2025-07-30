@@ -16,6 +16,8 @@ from bookapp.models import Bookie
 # import fastpass 
 import gspread
 import sys
+import urllib.parse
+import xml.etree.ElementTree as ET
 
 def enter_search(request):
     """Main page view that displays the book search form."""
@@ -97,6 +99,10 @@ def kick_user_out(request):
 def process_book_file(book_file):
     booklist = []
     for line in book_file:
+        # Decode bytes to string if necessary
+        if isinstance(line, bytes):
+            line = line.decode('utf-8')
+        line = line.strip()  # Remove any trailing newlines/whitespace
         comma_index = line.rfind(",")
         if comma_index != -1:
             title = line[:comma_index].strip()
@@ -107,81 +113,156 @@ def process_book_file(book_file):
 
 
 # LIBRARY SEARCHING
-# to retrieve the SFPL site url for any book
-def create_library_url(search_query, lib_location = "3"):
-    #PROMPT
-    #MAIN LIBRARY. THIS WILL CHANGE WHEN I ALLOW OTHER INPUT.
-    #MAKES TITLE AND AUTHOR (SEARCH QUERY) WORK IN A URL
-    joined_query = "+".join(search_query.split())
-    #SETTING UP COMPONENTS OF SEARCH URL 
-    # searchscope=library location
-    # m=media type (a=book)
-    list = ["?SEARCH=", joined_query, "&x=0&y=0&searchscope=", lib_location, "&p=&l=eng&m=a&Da=&Db=&SORT=D&availlim=1"]
-    #START OF THE URL
-    library_base_url = "http://sflib1.sfpl.org/search/X"
-
-    # STICK THE PARTS TOGETHER TO CREATE A URL WITH THE SEARCH
-    for item in list:
-        library_base_url += item
-        print(library_base_url)
+# to retrieve the SFPL site url for any book using the new BiblioCommons API
+def create_library_url(book_title, author, lib_location="3"):
+    """
+    Create a BiblioCommons RSS search URL for SFPL
+    lib_location mapping to branch names needs to be updated
+    """
     
-    # print "LIB_URL=", library_base_url
-    return library_base_url
+    # Map location codes to exact branch names as used by the new API
+    location_map = {
+        "3": "MAIN",
+        "4": "ANZA BRANCH",
+        "5": "BAYVIEW BRANCH", 
+        "6": "BERNAL HEIGHTS BRANCH",
+        "8": "CHINATOWN BRANCH",
+        "9": "EUREKA VALLEY BRANCH",
+        "10": "EXCELSIOR BRANCH",
+        "11": "GLEN PARK BRANCH",
+        "12": "GOLDEN GATE VALLEY BRANCH",
+        "13": "INGLESIDE BRANCH",
+        "14": "CHILDREN'S BOOKMOBILE",  # Updated from "Library on Wheels"
+        "15": "MARINA BRANCH",
+        "16": "MERCED BRANCH",
+        "17": "MISSION BRANCH",
+        "18": "MISSION BAY BRANCH",
+        "19": "NOE VALLEY BRANCH",
+        "20": "NORTH BEACH BRANCH",
+        "21": "OCEAN VIEW BRANCH",
+        "22": "ORTEGA BRANCH",
+        "23": "PARK BRANCH",
+        "24": "PARKSIDE BRANCH",
+        "25": "PORTOLA BRANCH",
+        "26": "POTRERO BRANCH",
+        "27": "PRESIDIO BRANCH",
+        "28": "RICHMOND BRANCH",
+        "29": "SUNSET BRANCH",
+        "30": "VISITACION VALLEY BRANCH",
+        "31": "WEST PORTAL BRANCH",
+        "34": "WESTERN ADDITION BRANCH",
+    }
+    
+    branch_name = location_map.get(lib_location, "MAIN")
+    
+    # Create the search query in the new format
+    # Format: title:(Book Title) AND contributor:(Author Name) AND format:(bk) AND avlocation:"BRANCH NAME"
+    query = f'title:({book_title}) AND contributor:({author}) AND format:(bk) AND avlocation:"{branch_name}"'
+    
+    # URL encode the query
+    encoded_query = urllib.parse.quote(query)
+    
+    # Create the full URL
+    base_url = "https://gateway.bibliocommons.com/v2/libraries/sfpl/rss/search"
+    full_url = f"{base_url}?query={encoded_query}&searchType=bl"
+    
+    print(f"Library URL: {full_url}")
+    return full_url
+
+
+def extract_details_from_rss(book_title, author, xml_content):
+    """
+    Extract book details from BiblioCommons RSS XML response
+    """
+    from xml.etree.ElementTree import ParseError
+    
+    try:
+        # Parse the XML
+        root = ET.fromstring(xml_content)
+        
+        # Find all items in the RSS feed
+        items = root.findall('.//item')
+        
+        if not items:
+            print("No items found in RSS feed")
+            return None
+        
+        # Extract book information from items
+        biblio_info = []
+        for item in items:
+            title_elem = item.find('title')
+            creator_elem = item.find('.//{http://purl.org/dc/elements/1.1/}creator')
+            
+            if title_elem is not None and creator_elem is not None:
+                title = title_elem.text.strip() if title_elem.text else ""
+                creator = creator_elem.text.strip() if creator_elem.text else ""
+                
+                if title and creator:
+                    biblio_info.append((title, creator))
+        
+        if not biblio_info:
+            print("No valid book info found in RSS items")
+            return None
+        
+        # Use fuzzy matching to find the best match
+        scored_info = []
+        for info in biblio_info:
+            title_score = fuzz.token_set_ratio(info[0], book_title)
+            author_score = fuzz.token_set_ratio(info[1], author)
+            total_score = title_score + author_score
+            scored_info.append((total_score, info))
+        
+        if scored_info:
+            scored_info.sort(reverse=True)  # Sort descending by score
+            best_match = scored_info[0][1]  # Get the best match
+            print(f"Best match: {best_match} (score: {scored_info[0][0]})")
+            return best_match
+        
+        return None
+        
+    except ParseError as e:
+        print(f"XML parsing error: {e}")
+        return None
+    except Exception as e:
+        print(f"Error extracting details from RSS: {e}")
+        return None
 
 
 def extract_details_from_single(pq_data):
-    bib_info_list = pq_data("td.bibInfoData")
-    if not bib_info_list:
-        return None
-    title_td = bib_info_list[2]
-    title_text = title_td.text_content()
-
-    author_td = bib_info_list[1]
-    author_text = author_td.text_content()
-
-    return (title_text, author_text)
+    # This function is now deprecated with the new API
+    return None
 
 
 def extract_details_from_multiple(book_title, author, pq_data):
-    book_trs = pq_data("tr.briefCitRow")
-
-    biblio_info = []
-    for book_tr in book_trs:
-        query_obj = pq(book_tr)
-        title = query_obj("table")[1].getchildren()[0].text_content().strip()
-        author = query_obj("table")[1].getchildren()[1].text_content().strip()
-        if author:
-            biblio_info.append( (title, author) )
-    
-    if not biblio_info:
-        return None
-
-    scored_info = []
-    
-    for info in biblio_info:
-        title_score = fuzz.token_set_ratio(info[0], book_title)
-        author_score = fuzz.token_set_ratio(info[1], author)
-        total_score = title_score + author_score
-        scored_info.append( (total_score, info) )
-
-    scored_info.sort()
-    return scored_info[-1][1]
+    # This function is now deprecated with the new API  
+    return None
 
 
-def extract_details(book_title, author, html):
-    pq_data = pq(html)
-    details = extract_details_from_single(pq_data)
-    if not details:
-        details = extract_details_from_multiple(book_title, author, pq_data)
-
-    return details
+def extract_details(book_title, author, content):
+    """
+    Main function to extract details from library response
+    Now uses RSS XML parsing instead of HTML parsing
+    """
+    # The content is now XML from RSS feed, not HTML
+    return extract_details_from_rss(book_title, author, content)
 
 
 def get_library_details(book, author, library):
-    url = create_library_url(book, library)
-    response = requests.get(url).content
-    details = extract_details(book, author, response)
-    return details
+    url = create_library_url(book, author, library)  # Now passes both book and author
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()  # Raise an exception for bad status codes
+        if not response.content:
+            print(f"Empty response from library URL: {url}")
+            return None
+        details = extract_details(book, author, response.content)
+        return details
+    except requests.RequestException as e:
+        print(f"Error fetching library details for '{book}' by '{author}': {e}")
+        return None
+    except Exception as e:
+        print(f"Error parsing library response for '{book}' by '{author}': {e}")
+        return None
 
 
 def get_details(book, author, library, library_base_url):
@@ -190,7 +271,8 @@ def get_details(book, author, library, library_base_url):
         return None
     title = details[0]
     library_author = details[1]
-    rating = find_gr_ratings(create_gr_url(book))
+    #rating = find_gr_ratings(create_gr_url(book))
+    rating = "Ratings Not Available At The Moment"
     return (title, rating)
 
 
@@ -221,8 +303,7 @@ def check_books(request):
     gr_rating = 0
     checked_in_books = []
     for book_title, author in booklist:
-        library_base_url = create_library_url(book_title, lib_location)
-        details = get_details(book_title, author, lib_location, library_base_url)
+        details = get_details(book_title, author, lib_location, None)  # library_base_url not needed anymore
         if details:
             checked_in_books.append(details)
             print("processed!")
