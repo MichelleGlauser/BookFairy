@@ -272,7 +272,7 @@ def get_details(book, author, library, library_base_url):
     title = details[0]
     library_author = details[1]
     #rating = find_gr_ratings(create_gr_url(book))
-    rating = "Coming Soon"
+    rating = "ratings not found"
     return (title, rating)
 
 
