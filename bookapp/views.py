@@ -132,7 +132,7 @@ def create_library_url(book_title, author, lib_location="3"):
         "11": "GLEN PARK BRANCH",
         "12": "GOLDEN GATE VALLEY BRANCH",
         "13": "INGLESIDE BRANCH",
-        "14": "CHILDREN'S BOOKMOBILE",  # Updated from "Library on Wheels"
+        "14": "CHILDREN'S BOOKMOBILE",
         "15": "MARINA BRANCH",
         "16": "MERCED BRANCH",
         "17": "MISSION BRANCH",
@@ -169,8 +169,12 @@ def create_library_url(book_title, author, lib_location="3"):
     print(f"Library URL: {full_url}")
     return full_url
 
-
-def extract_details_from_rss(book_title, author, xml_content):
+def extract_details(book_title, author, content):
+    """
+    Main function to extract details from library response
+    Now uses RSS XML parsing instead of HTML parsing
+    """
+    # The content is now XML from RSS feed, not HTML
     """
     Extract book details from BiblioCommons RSS XML response
     """
@@ -178,7 +182,7 @@ def extract_details_from_rss(book_title, author, xml_content):
     
     try:
         # Parse the XML
-        root = ET.fromstring(xml_content)
+        root = ET.fromstring(content)
         
         # Find all items in the RSS feed
         items = root.findall('.//item')
@@ -226,25 +230,6 @@ def extract_details_from_rss(book_title, author, xml_content):
     except Exception as e:
         print(f"Error extracting details from RSS: {e}")
         return None
-
-
-def extract_details_from_single(pq_data):
-    # This function is now deprecated with the new API
-    return None
-
-
-def extract_details_from_multiple(book_title, author, pq_data):
-    # This function is now deprecated with the new API  
-    return None
-
-
-def extract_details(book_title, author, content):
-    """
-    Main function to extract details from library response
-    Now uses RSS XML parsing instead of HTML parsing
-    """
-    # The content is now XML from RSS feed, not HTML
-    return extract_details_from_rss(book_title, author, content)
 
 
 def get_library_details(book, author, library):
@@ -317,44 +302,27 @@ def check_books(request):
         { 'booklist': checked_in_books }
         )
 
-
-# to see if the book is checked in
-def check_if_in(library_base_url):
-    # retrieves created URL
-    response = requests.get(library_base_url)
-    # gets the content from the created URL
-    pyed_data = pq(response.content)
-    # print pyed_data
-    detail = pyed_data("p.detail").eq(0) #shows whole p class
-    print("DETAIL=", detail)
-    area = pyed_data(detail).children("a") # looks like this does the same thing
-    print("AREA=", area)
-    href = pyed_data(area).attr("href") # this provides the URL without any tags
-    print(href)
-    fullURL = "http://sflib1.sfpl.org" + href
-    # if href is None:
-         
-    availability = requests.get(fullURL)
-    # returns True if the content on the site, 
-    # shows the words "CHECK SHELF"
-    return "CHECK SHELF" in availability.content 
-
-
+def find_gr_rating(title, author):
+    gr_url = get_gr_search_url(title, author)
+    # requests gr_url 
+    response = requests.get(gr_url)
+    # retrieves content from gr_url
+    data = pq(response.content)
+    # gets to the correct area of html
+    area = data("span.minirating").eq(0)
+    a = data(area)
+    # pulls out rating avg and number of ratings
+    gr_rating = a.text()
 
 # GOODREADS SEARCHING
 # to retrieve the Goodreads site url for any book
-def create_gr_url(search_query):
-    joined_query = "+".join(search_query.split())
-    url_list = [joined_query, "&search_type=books"]
-    gr_url = "http://www.goodreads.com/search?utf8=%E2%9C%93&q="
-    for item in url_list:
-        gr_url += item
-    return gr_url
-
+def get_gr_search_url(title, author):
+    base_url = "http://www.goodreads.com/search?utf8=%E2%9C%93&q="
+    return f"{base_url}{title} {author}&search_type=books"
 
 # to compare Goodreads authors and pick the best
 def score_gr_details(search_query):
-    gr_url = create_gr_url(search_query)
+    gr_url = get_gr_search_url(search_query)
     response = requests.get(gr_url)
     pq_data = pq(response.content)
     books = pq_data("tr[itemtype='http://schema.org/Book']")
@@ -402,7 +370,7 @@ def find_gr_ratings(gr_url):
 
 
 def get_gr_details(search_query):
-    url = create_gr_url(search_query)
+    url = get_gr_search_url(search_query)
     rating = find_gr_ratings(url)
     scored_info = score_gr_details(search_query)
     return rating
