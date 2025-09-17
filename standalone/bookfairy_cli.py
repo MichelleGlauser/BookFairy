@@ -36,12 +36,12 @@ REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, os.pardir))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
+# Import shared core modules from bfcore and fail gracefully if missing
 try:
-    # Shared core modules
     from bfcore.library import get_library_details, LOCATION_MAP
     from bfcore.goodreads import find_gr_rating
 except Exception as e:
-    print("Error importing project modules. Ensure you run this from the repo root (BookFairy) or the standalone folder.")
+    print("Error importing bfcore modules. Ensure you're running from the repo root and that 'bfcore' exists.")
     print(f"Import error: {e}")
     sys.exit(2)
 
@@ -159,6 +159,261 @@ def validate_input_methods(args: argparse.Namespace) -> None:
         raise SystemExit("Error: please provide only one of --file, --text, or --gspread.")
 
 
+# --------------- Interactive mode helpers -----------------
+def _input(prompt: str) -> str:
+    try:
+        return input(prompt)
+    except EOFError:
+        return ""
+
+
+def fuzzy_resolve_location(user_input: str) -> Optional[Tuple[str, str]]:
+    """Return (code, name) best matching user_input using fuzzy matching over codes and names."""
+    from fuzzywuzzy import fuzz
+    s = (user_input or "").strip()
+    if not s:
+        return None
+    # Exact code match
+    if s in LOCATION_MAP:
+        return s, LOCATION_MAP[s]
+    # Try case-insensitive name exact
+    for code, name in LOCATION_MAP.items():
+        if s.lower() == name.lower():
+            return code, name
+    # Fuzzy match on code or name
+    best: Tuple[int, Tuple[str, str]] = (-1, ("", ""))
+    for code, name in LOCATION_MAP.items():
+        score = max(
+            fuzz.token_set_ratio(s, code),
+            fuzz.token_set_ratio(s, name),
+        )
+        if score > best[0]:
+            best = (score, (code, name))
+    return best[1] if best[0] >= 60 else None  # require a reasonable threshold
+
+
+def print_locations_table() -> None:
+    print("Allowed SFPL locations (code: name):")
+    for code in sorted(LOCATION_MAP, key=lambda k: int(k)):
+        print(f"  {code}: {LOCATION_MAP[code]}")
+
+
+def interactive_wizard() -> argparse.Namespace:
+    print("BookFairy interactive mode — no args provided. Let's set things up.")
+    # Step 1: choose input method
+    method = None
+    while method is None:
+        resp = _input("Input method? [F]ile / [T]ext / [G]oogle Sheet: ").strip().lower()
+        if resp in ("f", "file"):
+            method = "file"
+        elif resp in ("t", "text"):
+            method = "text"
+        elif resp in ("g", "gs", "gspread", "sheet", "google"):
+            method = "gspread"
+        else:
+            print("Sorry, please enter F, T, or G.")
+
+    file_path = raw_text = gspread_ref = worksheet = None
+    if method == "file":
+        while True:
+            p = _input("Path to text file with 'Title, Author' per line: ").strip()
+            if not p:
+                print("Please provide a file path or press Ctrl+C to abort.")
+                continue
+            if not os.path.exists(p):
+                print(f"File not found: {p}")
+                continue
+            file_path = p
+            break
+    elif method == "text":
+        while True:
+            t = _input("Paste lines (Title, Author). End with an empty line:\n").rstrip("\n")
+            # Allow multi-line: keep reading until blank line
+            lines = [t]
+            while True:
+                nxt = _input("")
+                if nxt.strip() == "":
+                    break
+                lines.append(nxt)
+            joined = "\n".join(lines).strip()
+            if not joined:
+                print("No text received. Please try again.")
+                continue
+            raw_text = joined
+            break
+    else:  # gspread
+        while True:
+            g = _input("Google Sheet title, key, or full URL: ").strip()
+            if not g:
+                print("Please provide a Google Sheet reference.")
+                continue
+            gspread_ref = g
+            ws = _input("Worksheet name (optional, default 'To Read' or first sheet): ").strip()
+            worksheet = ws or None
+            break
+
+    # Step 2: library location (code or name), fuzzy match allowed
+    lib_code = None
+    lib_name = None
+    while lib_code is None:
+        s = _input("Library location (code or name, type 'list' to see options) [default MAIN]: ").strip()
+        if not s:
+            lib_code, lib_name = "3", LOCATION_MAP["3"]
+            break
+        if s.lower() in ("list", "ls", "l"):
+            print_locations_table()
+            continue
+        match = fuzzy_resolve_location(s)
+        if not match:
+            print("Couldn't resolve that to a branch. Try again or type 'list'.")
+            continue
+        lib_code, lib_name = match
+        # Confirm
+        conf = _input(f"Use '{lib_name}' (code {lib_code})? [Y/n]: ").strip().lower()
+        if conf in ("n", "no"):
+            lib_code = None
+        else:
+            break
+
+    # No delay prompt in interactive mode; default to 0.0
+    delay = 0.0
+
+    # Step 4: output format
+    fmt = None
+    while fmt is None:
+        f = _input("Output format? [T]ext / [J]SON (default: Text): ").strip().lower()
+        if f in ("", "t", "text"):
+            fmt = "text"
+        elif f in ("j", "json"):
+            fmt = "json"
+        else:
+            print("Please enter T or J (or press Enter for Text).")
+
+    # Review & edit
+    def show_summary():
+        print("\nReview your choices:")
+        print(f"1) Input method: {method}")
+        if method == "file":
+            print(f"2) File path: {file_path}")
+        elif method == "text":
+            preview = (raw_text or "").splitlines()[:2]
+            prev_str = " | ".join(preview) + (" ..." if len((raw_text or "").splitlines()) > 2 else "")
+            print(f"2) Raw text (preview): {prev_str}")
+        else:
+            print(f"2) Google Sheet: {gspread_ref}  Worksheet: {worksheet or '(auto)'}")
+        print(f"3) Library: {lib_name} (code {lib_code})")
+        print(f"4) Format: {fmt}")
+
+    while True:
+        show_summary()
+        choice = _input("Edit which? [1-4] or press Enter to continue: ").strip()
+        if choice == "":
+            break
+        if choice not in {"1", "2", "3", "4"}:
+            print("Please enter a number 1-4 or press Enter.")
+            continue
+        c = int(choice)
+        if c == 1:
+            # Re-pick method entirely
+            method = None
+            while method is None:
+                resp = _input("Input method? [F]ile / [T]ext / [G]oogle Sheet: ").strip().lower()
+                if resp in ("f", "file"):
+                    method = "file"
+                elif resp in ("t", "text"):
+                    method = "text"
+                elif resp in ("g", "gs", "gspread", "sheet", "google"):
+                    method = "gspread"
+                else:
+                    print("Sorry, please enter F, T, or G.")
+            file_path = raw_text = gspread_ref = worksheet = None
+            # Recollect method-specific fields quickly
+            if method == "file":
+                while True:
+                    p = _input("Path to text file: ").strip()
+                    if not p:
+                        print("Please provide a file path.")
+                        continue
+                    if not os.path.exists(p):
+                        print(f"File not found: {p}")
+                        continue
+                    file_path = p
+                    break
+            elif method == "text":
+                print("Enter new text. End with a blank line.")
+                lines = []
+                while True:
+                    nxt = _input("")
+                    if nxt.strip() == "":
+                        break
+                    lines.append(nxt)
+                raw_text = "\n".join(lines).strip()
+                if not raw_text:
+                    print("No text entered; reverting to previous.")
+            else:
+                gspread_ref = _input("Google Sheet title/key/URL: ").strip() or gspread_ref
+                ws2 = _input("Worksheet (optional): ").strip()
+                worksheet = ws2 or worksheet
+        elif c == 2:
+            if method == "file":
+                p = _input("New file path: ").strip()
+                if p and os.path.exists(p):
+                    file_path = p
+                else:
+                    print("Invalid path; keeping previous.")
+            elif method == "text":
+                print("Enter new text. End with a blank line.")
+                lines = []
+                while True:
+                    nxt = _input("")
+                    if nxt.strip() == "":
+                        break
+                    lines.append(nxt)
+                new_text = "\n".join(lines).strip()
+                if new_text:
+                    raw_text = new_text
+                else:
+                    print("No text entered; keeping previous.")
+            else:
+                g = _input("New Google Sheet title/key/URL (leave blank to keep): ").strip()
+                if g:
+                    gspread_ref = g
+                ws2 = _input("New worksheet (blank to keep): ").strip()
+                if ws2:
+                    worksheet = ws2
+        elif c == 3:
+            while True:
+                s = _input("Library location (code or name, 'list' to see): ").strip()
+                if s.lower() in ("list", "ls", "l"):
+                    print_locations_table()
+                    continue
+                match = fuzzy_resolve_location(s)
+                if not match:
+                    print("Couldn't resolve; try again.")
+                    continue
+                lib_code, lib_name = match
+                break
+        elif c == 4:
+            f = _input("Format [text/json]: ").strip().lower()
+            if f in ("text", "json"):
+                fmt = f
+            else:
+                print("Invalid; keeping previous.")
+
+    # Build an argparse-like namespace to reuse downstream logic
+    ns = argparse.Namespace(
+        file_path=file_path,
+        raw_text=raw_text,
+        gspread_ref=gspread_ref,
+        worksheet=worksheet,
+        lib_location=lib_code,
+        delay=delay,
+        format=fmt,
+        list_locations=False,
+    )
+    return ns
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="BookFairy CLI: fetch SFPL + Goodreads data")
     parser.add_argument("--file", dest="file_path", help="Path to text file with 'Title, Author' per line")
@@ -171,8 +426,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--format", choices=["text", "json"], default="text", help="Output format")
     parser.add_argument("--list-locations", action="store_true", help="Print allowed SFPL location codes and exit")
 
-    args = parser.parse_args(argv)
-    validate_input_methods(args)
+    # If no args provided, enter interactive mode
+    if argv is None:
+        argv = sys.argv[1:]
+    if len(argv) == 0:
+        args = interactive_wizard()
+    else:
+        args = parser.parse_args(argv)
+        validate_input_methods(args)
 
     if args.list_locations:
         print_locations()

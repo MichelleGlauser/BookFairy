@@ -7,7 +7,7 @@ from fuzzywuzzy import fuzz
 LOCATION_MAP = {
     "3": "MAIN",
     "4": "ANZA BRANCH",
-    "5": "BAYVIEW BRANCH", 
+    "5": "BAYVIEW BRANCH",
     "6": "BERNAL HEIGHTS BRANCH",
     "8": "CHINATOWN BRANCH",
     "9": "EUREKA VALLEY BRANCH",
@@ -48,7 +48,7 @@ def create_library_url(book_title, author, lib_location="3"):
 
 
 def extract_details(book_title, author, content):
-    # The content is now XML from RSS feed, not HTML
+    """Parse RSS XML content and return best (title, creator) match using fuzzy scores."""
     from xml.etree.ElementTree import ParseError
     try:
         root = ET.fromstring(content)

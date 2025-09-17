@@ -1,3 +1,11 @@
 This project is my way of helping myself find a book to read without having to do a lot of back-and-forth with the San Francisco Public Library website. 
 
 It is written in Python with a Django framework.
+
+Standalone CLI
+---------------
+You can run the core lookup logic without Django via the root-level script:
+
+	python3 bookfairy_cli.py --list-locations
+
+See `standalone/README.md` for full usage, Google Sheets auth, and examples.
