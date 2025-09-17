@@ -22,12 +22,12 @@ pip install .
 
 For CLI with Google Sheets support:
 ```bash
-pip install .[sheets]
+pip install '.[sheets]'
 ```
 
 For the web app (in progress):
 ```bash
-pip install .[web]
+pip install '.[web]' '.[sheets]'
 ```
 
 Google Sheets OAuth (optional)
