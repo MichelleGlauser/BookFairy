@@ -169,7 +169,7 @@ def _input(prompt: str) -> str:
 
 
 def fuzzy_resolve_location(user_input: str) -> Optional[Tuple[str, str]]:
-    """Return (code, name) best matching user_input using fuzzy matching over codes and names."""
+    """Return (code, name) best matching user_input using fuzzy matching over names only. Only exact code matches allowed."""
     s = (user_input or "").strip()
     if not s:
         return None
@@ -180,13 +180,9 @@ def fuzzy_resolve_location(user_input: str) -> Optional[Tuple[str, str]]:
     for code, name in LOCATION_MAP.items():
         if s.lower() == name.lower():
             return code, name
-    # Fuzzy match on code or name
     best: Tuple[int, Tuple[str, str]] = (-1, ("", ""))
     for code, name in LOCATION_MAP.items():
-        score = max(
-            fuzz.token_set_ratio(s, code),
-            fuzz.token_set_ratio(s, name),
-        )
+        score = fuzz.token_set_ratio(s, name)
         if score > best[0]:
             best = (score, (code, name))
     return best[1] if best[0] >= 60 else None  # require a reasonable threshold
