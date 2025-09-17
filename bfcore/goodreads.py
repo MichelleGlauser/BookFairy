@@ -1,6 +1,7 @@
 import requests
 from pyquery import PyQuery as pq
-from fuzzywuzzy import fuzz
+from thefuzz import fuzz
+from . import debug_log
 
 # GOODREADS SEARCHING
 # to retrieve the Goodreads site url for any book
@@ -41,11 +42,14 @@ def find_gr_rating(title, author):
             return None
 
         def score(info):
-            title_score = fuzz.token_set_ratio(info[0], title)
-            author_score = fuzz.token_set_ratio(info[1], author)
-            return title_score + author_score
+            # Favor near-exact title matches; avoid subset 100s
+            title_score = fuzz.token_sort_ratio(info[0], title)
+            author_score = fuzz.token_sort_ratio(info[1], author)
+            weighted = title_score * 1.2 + author_score
+            length_penalty = abs(len(info[0]) - len(title)) * 0.2
+            return weighted - length_penalty
 
         return max(biblio_info, key=score)[2]
     except Exception as e:
-        print(f"Error fetching Goodreads rating: {e}")
+        debug_log(f"Error fetching Goodreads rating: {e}")
         return None

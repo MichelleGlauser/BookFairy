@@ -29,6 +29,7 @@ import re
 import sys
 import time
 from typing import Iterable, List, Optional, Sequence, Tuple
+from thefuzz import fuzz
 
 # Resolve repo root so we can import shared modules
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -169,7 +170,6 @@ def _input(prompt: str) -> str:
 
 def fuzzy_resolve_location(user_input: str) -> Optional[Tuple[str, str]]:
     """Return (code, name) best matching user_input using fuzzy matching over codes and names."""
-    from fuzzywuzzy import fuzz
     s = (user_input or "").strip()
     if not s:
         return None

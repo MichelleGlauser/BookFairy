@@ -1,7 +1,8 @@
 import requests
 import urllib
 import xml.etree.ElementTree as ET
-from fuzzywuzzy import fuzz
+from thefuzz import fuzz
+import bfcore
 
 # Exposed location map for clients (standalone + Django app)
 LOCATION_MAP = {
@@ -43,7 +44,7 @@ def create_library_url(book_title, author, lib_location="3"):
     encoded_query = urllib.parse.quote(query)
     base_url = "https://gateway.bibliocommons.com/v2/libraries/sfpl/rss/search"
     full_url = f"{base_url}?query={encoded_query}&searchType=bl"
-    print(f"Library URL: {full_url}")
+    bfcore.debug_log(f"Library URL: {full_url}")
     return full_url
 
 
@@ -54,7 +55,7 @@ def extract_details(book_title, author, content):
         root = ET.fromstring(content)
         items = root.findall('.//item')
         if not items:
-            print("No items found in RSS feed")
+            bfcore.debug_log("No items found in RSS feed")
             return None
         biblio_info = []
         for item in items:
@@ -66,25 +67,32 @@ def extract_details(book_title, author, content):
                 if title and creator:
                     biblio_info.append((title, creator))
         if not biblio_info:
-            print("No valid book info found in RSS items")
+            bfcore.debug_log("No valid book info found in RSS items")
             return None
+        # Score candidates: prefer near-exact titles and same author.
+        # Use token_sort_ratio to avoid subset ("Dune" vs "The Maker of Dune") scoring as 100.
         scored_info = []
-        for info in biblio_info:
-            title_score = fuzz.token_set_ratio(info[0], book_title)
-            author_score = fuzz.token_set_ratio(info[1], author)
-            total_score = title_score + author_score
-            scored_info.append((total_score, info))
+        q_title = (book_title or "").strip()
+        q_author = (author or "").strip()
+        for cand_title, cand_author in biblio_info:
+            title_score = fuzz.token_sort_ratio(cand_title, q_title)
+            author_score = fuzz.token_sort_ratio(cand_author, q_author)
+            # Weight title a bit higher than author
+            weighted = title_score * 1.2 + author_score
+            # Tie-breaker: prefer titles with length close to query
+            length_penalty = abs(len(cand_title) - len(q_title)) * 0.2
+            total_score = weighted - length_penalty
+            scored_info.append((total_score, (cand_title, cand_author)))
         if scored_info:
-            scored_info.sort(reverse=True)
+            scored_info.sort(key=lambda x: x[0], reverse=True)
             best_match = scored_info[0][1]
-            print(f"Best match: {best_match} (score: {scored_info[0][0]})")
+            bfcore.debug_log(f"Best match: {best_match} (score: {scored_info[0][0]:.2f})")
             return best_match
-        return None
     except ParseError as e:
-        print(f"XML parsing error: {e}")
+        bfcore.debug_log(f"XML parsing error: {e}")
         return None
     except Exception as e:
-        print(f"Error extracting details from RSS: {e}")
+        bfcore.debug_log(f"Error extracting details from RSS: {e}")
         return None
 
 
@@ -94,13 +102,13 @@ def get_library_details(book, author, library):
         response = requests.get(url, timeout=10)
         response.raise_for_status()
         if not response.content:
-            print(f"Empty response from library URL: {url}")
+            bfcore.debug_log(f"Empty response from library URL: {url}")
             return None
         details = extract_details(book, author, response.content)
         return details
     except requests.RequestException as e:
-        print(f"Error fetching library details for '{book}' by '{author}': {e}")
+        bfcore.debug_log(f"Error fetching library details for '{book}' by '{author}': {e}")
         return None
     except Exception as e:
-        print(f"Error parsing library response for '{book}' by '{author}': {e}")
+        bfcore.debug_log(f"Error parsing library response for '{book}' by '{author}': {e}")
         return None
