@@ -1,6 +1,6 @@
 # BookFairy Standalone CLI
 
-Fetch SFPL availability candidate and Goodreads rating for a list of books, without running Django.
+Fetch SFPL availability candidate and Goodreads rating for a list of books, separate from the web app
 
 ## Requirements
 
@@ -13,7 +13,7 @@ Install the standalone dependencies (separate from the Django app):
 cd standalone
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r cli-requirements.txt
 ```
 
 Note: The CLI imports code from `bfcore` and is located at the repo root. Run it from the repo root so imports resolve.
@@ -27,7 +27,13 @@ Place a `credentials.json` in the current directory (or follow gspread’s searc
 
 ## Usage
 
-Run the CLI from the repo root:
+Run the CLI from the repo root, it will prompt for all the info needed
+
+```bash
+python3 bookfairy_cli.py
+```
+
+Alternatively, use CLI args. If any args are provided interactive mode is disabled.
 
 ```bash
 # Print allowed library locations
@@ -55,7 +61,3 @@ python3 bookfairy_cli.py --file books.txt --format json --delay 0.8
 - ImportError: Ensure you are in the repo root and `bfcore/` exists next to `bookfairy_cli.py`.
 - Goodreads errors or slow responses: Use `--delay` (e.g., `0.8s`) to be polite and reduce risk of throttling.
 - No results: It means SFPL had no match for the given book at that branch/location.
-
-## Notes
-
-- This CLI prints only the matched title and Goodreads rating (or `N/A`). If you want more fields (e.g., author, branch name), we can extend the script to include them.

@@ -4,8 +4,5 @@ requests==2.32.3
 pyquery==2.0.0
 lxml==4.9.4
 thefuzz==0.22.1
-rapidfuzz>=3.0.0
 # Google Sheets (optional; only needed for --gspread)
 gspread==5.12.4
-google-auth>=2.29.0
-google-auth-oauthlib>=1.2.0
