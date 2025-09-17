@@ -35,8 +35,6 @@ Google Sheets OAuth (optional)
 For `--gspread`, you need end-user OAuth set up per gspread docs:
 - https://docs.gspread.org/en/latest/oauth2.html#for-end-users
 
-Place a `credentials.json` in the repo root (or follow gspread’s search paths). On first run, a browser window will prompt you to authorize and `token.json` will be saved for reuse.
-
 Usage
 -----
 
