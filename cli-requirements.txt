@@ -1,8 +1,0 @@
-# Minimal dependencies for the standalone CLI
-# Uses existing app modules in ../bookapp for logic
-requests==2.32.3
-pyquery==2.0.0
-lxml==4.9.4
-thefuzz==0.22.1
-# Google Sheets (optional; only needed for --gspread)
-gspread==5.12.4
