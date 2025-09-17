@@ -278,17 +278,6 @@ def interactive_wizard() -> argparse.Namespace:
     # No delay prompt in interactive mode; default to 0.0
     delay = 0.0
 
-    # Step 4: output format
-    fmt = None
-    while fmt is None:
-        f = _input("Output format? [T]ext / [J]SON (default: Text): ").strip().lower()
-        if f in ("", "t", "text"):
-            fmt = "text"
-        elif f in ("j", "json"):
-            fmt = "json"
-        else:
-            print("Please enter T or J (or press Enter for Text).")
-
     # Review & edit
     def show_summary():
         print("\nReview your choices:")
@@ -302,15 +291,14 @@ def interactive_wizard() -> argparse.Namespace:
         else:
             print(f"2) Google Sheet: {gspread_ref}  Worksheet: {worksheet or '(auto)'}")
         print(f"3) Library: {lib_name} (code {lib_code})")
-        print(f"4) Format: {fmt}")
 
     while True:
         show_summary()
-        choice = _input("Edit which? [1-4] or press Enter to continue: ").strip()
+        choice = _input("Edit which? [1-3] or press Enter to continue: ").strip()
         if choice == "":
             break
-        if choice not in {"1", "2", "3", "4"}:
-            print("Please enter a number 1-4 or press Enter.")
+        if choice not in {"1", "2", "3"}:
+            print("Please enter a number 1-3 or press Enter.")
             continue
         c = int(choice)
         if c == 1:
@@ -393,12 +381,6 @@ def interactive_wizard() -> argparse.Namespace:
                     continue
                 lib_code, lib_name = match
                 break
-        elif c == 4:
-            f = _input("Format [text/json]: ").strip().lower()
-            if f in ("text", "json"):
-                fmt = f
-            else:
-                print("Invalid; keeping previous.")
 
     # Build an argparse-like namespace to reuse downstream logic
     ns = argparse.Namespace(
@@ -408,7 +390,6 @@ def interactive_wizard() -> argparse.Namespace:
         worksheet=worksheet,
         lib_location=lib_code,
         delay=delay,
-        format=fmt,
         list_locations=False,
     )
     return ns
@@ -423,7 +404,6 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--worksheet", help="Worksheet name for Google Sheet (default: 'To Read' if exists)")
     parser.add_argument("--lib-location", default="3", help="SFPL location code (default: '3' MAIN; use --list-locations)")
     parser.add_argument("--delay", type=float, default=0.0, help="Delay (seconds) between items to be kind to Goodreads")
-    parser.add_argument("--format", choices=["text", "json"], default="text", help="Output format")
     parser.add_argument("--list-locations", action="store_true", help="Print allowed SFPL location codes and exit")
 
     # If no args provided, enter interactive mode
@@ -474,36 +454,26 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         print("No valid books found. Expected lines like: 'Title, Author'.")
         return 1
 
-    # Process and collect results
-    results: List[Tuple[str, str, str]] = []  # (input_title, matched_title, rating_str)
+    # Print matches as we go
+    found = False
     for (title, author) in books:
         try:
             info = fetch_book_info(title, author, args.lib_location, delay=args.delay)
         except Exception as e:
             print(f"Error fetching data for '{title}' by '{author}': {e}")
-            info = None
+            continue
         if info is None:
             continue
         matched_title, rating_str = info
-        results.append((title, matched_title, rating_str))
+        found = True
+        if title != matched_title:
+            print(f"{matched_title} (from '{title}') — Goodreads: {rating_str}")
+        else:
+            print(f"{matched_title} — Goodreads: {rating_str}")
 
-    if not results:
+    if not found:
         print("No matches found from SFPL for the provided books.")
         return 0
-
-    if args.format == "json":
-        import json
-        payload = [
-            {"input_title": it, "matched_title": mt, "rating": r}
-            for (it, mt, r) in results
-        ]
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-    else:
-        for (input_title, matched_title, rating_str) in results:
-            if input_title != matched_title:
-                print(f"{matched_title} (from '{input_title}') — Goodreads: {rating_str}")
-            else:
-                print(f"{matched_title} — Goodreads: {rating_str}")
 
     return 0
 
