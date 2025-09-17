@@ -143,7 +143,8 @@ def fetch_book_info(title: str, author: str, lib_location: str, delay: float = 0
     if not details:
         return None
     matched_title = details[0]
-    rating = find_gr_rating(title, author)
+    matched_author = details[1]
+    rating = find_gr_rating(matched_title, matched_author)
     rating_str = f"{rating:.1f}" if isinstance(rating, (int, float)) else "N/A"
     if delay > 0:
         time.sleep(delay)
@@ -170,6 +171,7 @@ def _input(prompt: str) -> str:
 
 def fuzzy_resolve_location(user_input: str) -> Optional[Tuple[str, str]]:
     """Return (code, name) best matching user_input using fuzzy matching over names only. Only exact code matches allowed."""
+    from thefuzz import process
     s = (user_input or "").strip()
     if not s:
         return None
@@ -180,12 +182,13 @@ def fuzzy_resolve_location(user_input: str) -> Optional[Tuple[str, str]]:
     for code, name in LOCATION_MAP.items():
         if s.lower() == name.lower():
             return code, name
-    best: Tuple[int, Tuple[str, str]] = (-1, ("", ""))
-    for code, name in LOCATION_MAP.items():
-        score = fuzz.token_set_ratio(s, name)
-        if score > best[0]:
-            best = (score, (code, name))
-    return best[1] if best[0] >= 60 else None  # require a reasonable threshold
+    # Use process.extractOne for fuzzy match on names only
+    match = process.extractOne(s, LOCATION_MAP, score_cutoff=60)
+    if match:
+        code = match[2]  # key from dict
+        name = match[0]  # value from dict
+        return code, name
+    return None
 
 
 def print_locations_table() -> None:

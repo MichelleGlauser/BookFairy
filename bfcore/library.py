@@ -1,7 +1,8 @@
+import traceback
 import requests
 import urllib
 import xml.etree.ElementTree as ET
-from thefuzz import fuzz
+from thefuzz import fuzz, process
 import bfcore
 
 # Exposed location map for clients (standalone + Django app)
@@ -72,27 +73,23 @@ def extract_details(book_title, author, content):
         # Score candidates: prefer near-exact titles and same author.
         # Use token_sort_ratio to avoid subset ("Dune" vs "The Maker of Dune") scoring as 100.
         scored_info = []
-        q_title = (book_title or "").strip()
-        q_author = (author or "").strip()
-        for cand_title, cand_author in biblio_info:
-            title_score = fuzz.token_sort_ratio(cand_title, q_title)
-            author_score = fuzz.token_sort_ratio(cand_author, q_author)
-            # Weight title a bit higher than author
-            weighted = title_score * 1.2 + author_score
-            # Tie-breaker: prefer titles with length close to query
-            length_penalty = abs(len(cand_title) - len(q_title)) * 0.2
-            total_score = weighted - length_penalty
-            scored_info.append((total_score, (cand_title, cand_author)))
-        if scored_info:
-            scored_info.sort(key=lambda x: x[0], reverse=True)
-            best_match = scored_info[0][1]
-            bfcore.debug_log(f"Best match: {best_match} (score: {scored_info[0][0]:.2f})")
-            return best_match
+        def score(cand):
+            cand_title, cand_author = cand
+            title_score = fuzz.UWRatio(cand_title, book_title)
+            author_score = fuzz.UWRatio(cand_author, author)
+            return title_score + author_score
+
+        scored = ((score(b), b) for b in biblio_info)
+        match = max(scored, key=lambda x: x[0], default=None)
+        bfcore.debug_log(f"Best library match score: {match[0] if match else 'N/A'}")
+        if match[0] > 150:
+            return match[1]
+    
     except ParseError as e:
         bfcore.debug_log(f"XML parsing error: {e}")
         return None
     except Exception as e:
-        bfcore.debug_log(f"Error extracting details from RSS: {e}")
+        bfcore.debug_log(f"Error extracting details from RSS: {traceback.format_exc()}")
         return None
 
 
