@@ -163,7 +163,7 @@ def validate_input_methods(args: argparse.Namespace) -> None:
 # --------------- Interactive mode helpers -----------------
 def _input(prompt: str) -> str:
     try:
-        return input(prompt)
+        return input(prompt).strip()
     except EOFError:
         return ""
 
@@ -203,7 +203,7 @@ def interactive_wizard() -> argparse.Namespace:
     # Step 1: choose input method
     method = None
     while method is None:
-        resp = _input("Input method? [F]ile / [T]ext / [G]oogle Sheet: ").strip().lower()
+        resp = _input("Input method? [F]ile / [T]ext / [G]oogle Sheet: ").lower()
         if resp in ("f", "file"):
             method = "file"
         elif resp in ("t", "text"):
@@ -216,7 +216,7 @@ def interactive_wizard() -> argparse.Namespace:
     file_path = raw_text = gspread_ref = worksheet = None
     if method == "file":
         while True:
-            p = _input("Path to text file with 'Title, Author' per line: ").strip()
+            p = _input("Path to text file with 'Title, Author' per line: ")
             if not p:
                 print("Please provide a file path or press Ctrl+C to abort.")
                 continue
@@ -227,12 +227,12 @@ def interactive_wizard() -> argparse.Namespace:
             break
     elif method == "text":
         while True:
-            t = _input("Paste lines (Title, Author). End with an empty line:\n").rstrip("\n")
+            t = _input("Paste lines (Title, Author). End with an empty line:\n")
             # Allow multi-line: keep reading until blank line
             lines = [t]
             while True:
                 nxt = _input("")
-                if nxt.strip() == "":
+                if nxt == "":
                     break
                 lines.append(nxt)
             joined = "\n".join(lines).strip()
@@ -243,12 +243,12 @@ def interactive_wizard() -> argparse.Namespace:
             break
     else:  # gspread
         while True:
-            g = _input("Google Sheet title, key, or full URL: ").strip()
+            g = _input("Google Sheet title, key, or full URL: ")
             if not g:
                 print("Please provide a Google Sheet reference.")
                 continue
             gspread_ref = g
-            ws = _input("Worksheet name (optional, default 'To Read' or first sheet): ").strip()
+            ws = _input("Worksheet name (optional, default 'To Read' or first sheet): ")
             worksheet = ws or None
             break
 
@@ -256,7 +256,7 @@ def interactive_wizard() -> argparse.Namespace:
     lib_code = None
     lib_name = None
     while lib_code is None:
-        s = _input("Library location (code or name, type 'list' to see options) [default MAIN]: ").strip()
+        s = _input("Library location (l to list):")
         if not s:
             lib_code, lib_name = "3", LOCATION_MAP["3"]
             break
@@ -269,7 +269,7 @@ def interactive_wizard() -> argparse.Namespace:
             continue
         lib_code, lib_name = match
         # Confirm
-        conf = _input(f"Use '{lib_name}' (code {lib_code})? [Y/n]: ").strip().lower()
+        conf = _input(f"Use '{lib_name}' (code {lib_code})? [Y/n]: ").lower()
         if conf in ("n", "no"):
             lib_code = None
         else:
@@ -294,7 +294,7 @@ def interactive_wizard() -> argparse.Namespace:
 
     while True:
         show_summary()
-        choice = _input("Edit which? [1-3] or press Enter to continue: ").strip()
+        choice = _input("Edit which? [1-3] or press Enter to continue: ")
         if choice == "":
             break
         if choice not in {"1", "2", "3"}:
@@ -305,7 +305,7 @@ def interactive_wizard() -> argparse.Namespace:
             # Re-pick method entirely
             method = None
             while method is None:
-                resp = _input("Input method? [F]ile / [T]ext / [G]oogle Sheet: ").strip().lower()
+                resp = _input("Input method? [F]ile / [T]ext / [G]oogle Sheet: ").lower()
                 if resp in ("f", "file"):
                     method = "file"
                 elif resp in ("t", "text"):
@@ -318,7 +318,7 @@ def interactive_wizard() -> argparse.Namespace:
             # Recollect method-specific fields quickly
             if method == "file":
                 while True:
-                    p = _input("Path to text file: ").strip()
+                    p = _input("Path to text file: ")
                     if not p:
                         print("Please provide a file path.")
                         continue
@@ -332,19 +332,19 @@ def interactive_wizard() -> argparse.Namespace:
                 lines = []
                 while True:
                     nxt = _input("")
-                    if nxt.strip() == "":
+                    if nxt == "":
                         break
                     lines.append(nxt)
                 raw_text = "\n".join(lines).strip()
                 if not raw_text:
                     print("No text entered; reverting to previous.")
             else:
-                gspread_ref = _input("Google Sheet title/key/URL: ").strip() or gspread_ref
-                ws2 = _input("Worksheet (optional): ").strip()
+                gspread_ref = _input("Google Sheet title/key/URL: ") or gspread_ref
+                ws2 = _input("Worksheet (optional): ")
                 worksheet = ws2 or worksheet
         elif c == 2:
             if method == "file":
-                p = _input("New file path: ").strip()
+                p = _input("New file path: ")
                 if p and os.path.exists(p):
                     file_path = p
                 else:
@@ -354,7 +354,7 @@ def interactive_wizard() -> argparse.Namespace:
                 lines = []
                 while True:
                     nxt = _input("")
-                    if nxt.strip() == "":
+                    if nxt == "":
                         break
                     lines.append(nxt)
                 new_text = "\n".join(lines).strip()
@@ -363,15 +363,15 @@ def interactive_wizard() -> argparse.Namespace:
                 else:
                     print("No text entered; keeping previous.")
             else:
-                g = _input("New Google Sheet title/key/URL (leave blank to keep): ").strip()
+                g = _input("New Google Sheet title/key/URL (leave blank to keep): ")
                 if g:
                     gspread_ref = g
-                ws2 = _input("New worksheet (blank to keep): ").strip()
+                ws2 = _input("New worksheet (blank to keep): ")
                 if ws2:
                     worksheet = ws2
         elif c == 3:
             while True:
-                s = _input("Library location (code or name, 'list' to see): ").strip()
+                s = _input("Library location (code or name, 'list' to see): ")
                 if s.lower() in ("list", "ls", "l"):
                     print_locations_table()
                     continue
