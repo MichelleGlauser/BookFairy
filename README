@@ -27,7 +27,7 @@ pip install '.[sheets]'
 
 For the web app (in progress):
 ```bash
-pip install '.[web]' '.[sheets]'
+pip install '.[web]'
 ```
 
 Google Sheets OAuth (optional)

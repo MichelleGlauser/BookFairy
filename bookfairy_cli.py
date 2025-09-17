@@ -100,7 +100,7 @@ def load_books_from_gspread(spreadsheet: str, worksheet: Optional[str]) -> List[
         print("gspread is required for --gspread input. Install with 'pip install gspread google-auth google-auth-oauthlib'.")
         raise
 
-    gc = gspread.oauth()  # browser OAuth flow; requires credentials.json on first run
+    gc = gspread.oauth(scopes=gspread.auth.READONLY_SCOPES)  # browser OAuth flow; requires credentials.json on first run
 
     key = extract_spreadsheet_key(spreadsheet)
     if key:
@@ -124,10 +124,10 @@ def load_books_from_gspread(spreadsheet: str, worksheet: Optional[str]) -> List[
         cells = [c.strip() for c in r if isinstance(c, str)]
         if not cells:
             continue
-        if len(cells) >= 2 and cells[0] and cells[1]:
-            books.append((cells[0], cells[1]))
+        if len(cells) >= 2 and cells[1] and cells[2]:
+            books.append((cells[1], cells[2]))
         elif len(cells) >= 1:
-            parsed = parse_book_line(cells[0])
+            parsed = parse_book_line(cells[1])
             if parsed:
                 books.append(parsed)
     return books
@@ -441,19 +441,34 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     # Gather books
     books: List[Tuple[str, str]] = []
-    try:
-        if args.file_path:
-            if not os.path.exists(args.file_path):
-                print(f"File not found: {args.file_path}")
-                return 2
-            books = load_books_from_file(args.file_path)
-        elif args.raw_text:
-            books = load_books_from_text(args.raw_text)
-        elif args.gspread_ref:
-            books = load_books_from_gspread(args.gspread_ref, args.worksheet)
-    except Exception as e:
-        print(f"Error loading input: {e}")
-        return 2
+    while True:
+        try:
+            if args.file_path:
+                if not os.path.exists(args.file_path):
+                    print(f"File not found: {args.file_path}")
+                    return 2
+                books = load_books_from_file(args.file_path)
+            elif args.raw_text:
+                books = load_books_from_text(args.raw_text)
+            elif args.gspread_ref:
+                books = load_books_from_gspread(args.gspread_ref, args.worksheet)
+        except FileNotFoundError as e:
+            msg = str(e)
+            if "credentials.json" in msg or "token.json" in msg or "gspread" in msg:
+                print("\nGoogle Sheets credentials not found.\n")
+                print("To use Google Sheets, you must download credentials.json from Google Cloud Console and place it in your repo root or ~/.config/gspread/.")
+                print("See the README for setup instructions.")
+                if hasattr(args, 'gspread_ref') and args.gspread_ref:
+                    retry = input("Press Enter to retry after fixing credentials, or type 'abort' to exit: ").strip().lower()
+                    if retry == "abort":
+                        return 2
+                    continue
+            print(f"Error loading input: {e}")
+            return 2
+        except Exception as e:
+            print(f"Error loading input: {e}")
+            return 2
+        break
 
     if not books:
         print("No valid books found. Expected lines like: 'Title, Author'.")

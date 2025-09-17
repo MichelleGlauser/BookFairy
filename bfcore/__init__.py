@@ -9,7 +9,7 @@ from typing import Callable, Optional
 
 
 def _default_debug_logger(message: str) -> None:  # default behavior: print
-	print(message)
+    pass
 
 
 # Public hook used by bfcore modules
