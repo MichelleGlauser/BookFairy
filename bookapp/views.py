@@ -16,8 +16,8 @@ from bookapp.models import Bookie
 import gspread
 import sys
 import urllib.parse
-from .library import get_library_details
-
+from bfcore.library import get_library_details
+from bfcore.goodreads import find_gr_rating
 def enter_search(request):
     """Main page view that displays the book search form."""
     form = BookForm()
@@ -137,7 +137,7 @@ def check_books(request):
     gr_rating = 0
     checked_in_books = []
     for book_title, author in booklist:
-        details = get_details(book_title, author, lib_location, None)  # library_base_url not needed anymore
+        details = get_details(book_title, author, lib_location)
         if details:
             checked_in_books.append(details)
             print("processed!")
@@ -157,8 +157,9 @@ def get_details(book, author, library):
         return None
     title = details[0]
     library_author = details[1]
-    #rating = find_gr_ratings(create_gr_url(book))
-    rating = "ratings not found"
+    rating = find_gr_rating(book, author)
+    if rating is None:
+        rating = "N/A"
     return (title, rating)
 # # STEPS:
 
