@@ -1,7 +1,8 @@
 # hi
 from django.db import models
 from django.conf import settings
-from django.contrib.auth.models import User, check_password
+from django.contrib.auth.models import User
+from django.contrib.auth.hashers import check_password
 # import fastpass
 
 class Book(models.Model):
@@ -13,7 +14,7 @@ class Book(models.Model):
 
 class BookList(models.Model):
     title = models.FileField(upload_to='documents/%Y/%m/%d')
-    user = models.ForeignKey(User, related_name="booklists") # imported from django.contrib.auth.models
+    user = models.ForeignKey(User, related_name="booklists", on_delete=models.CASCADE) # imported from django.contrib.auth.models
     books = models.ManyToManyField(Book, related_name="lists")
 
     def __unicode__(self):
@@ -24,12 +25,12 @@ class AdminAccount(models.Model):
     ADMIN_PASSWORD = 'admin'
 
 class Bookie(models.Model):
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
 
     # identifier = models.CharField(max_length=40, unique=True, db_index=True)
     USERNAME_FIELD = 'identifier'
-    booklist = models.ForeignKey(BookList, null=True, blank=True)
+    booklist = models.ForeignKey(BookList, null=True, blank=True, on_delete=models.CASCADE)
 
     def __unicode__(self):
         return self.name

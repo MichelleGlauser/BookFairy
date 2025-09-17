@@ -1,5 +1,5 @@
 from django.contrib import admin
-from models import Book, BookList, Bookie
+from .models import Book, BookList, Bookie
 
 class BookappAdmin(admin.ModelAdmin):
     pass

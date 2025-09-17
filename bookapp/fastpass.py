@@ -1,4 +1,4 @@
-import oauth
+from . import oauth
 import cgi
 
 class FastPass:
